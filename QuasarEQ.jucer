@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="x6SWnH" name="QuasarEQ" projectType="audioplug" useAppConfig="0"
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginManufacturerCode="Ezhz"
+              pluginAAXCategory="1" pluginVST3Category="EQ" pluginName="Quasar EQ"
+              companyName="Ezuhazar">
+  <MAINGROUP id="KVWAhs" name="QuasarEQ">
+    <GROUP id="{A7B39CBD-CB16-DFB9-4453-FDEE49943E45}" name="Source">
+      <FILE id="ruCQC4" name="MyGainSlider.cpp" compile="1" resource="0"
+            file="Source/MyGainSlider.cpp"/>
+      <FILE id="GTD63v" name="MyGainSlider.h" compile="0" resource="0" file="Source/MyGainSlider.h"/>
+      <FILE id="PHceqy" name="QuasarHeader.h" compile="0" resource="0" file="Source/QuasarHeader.h"/>
+      <FILE id="HNEiSY" name="FilterBandControl.cpp" compile="1" resource="0"
+            file="Source/FilterBandControl.cpp"/>
+      <FILE id="XTBiDs" name="FilterBandControl.h" compile="0" resource="0"
+            file="Source/FilterBandControl.h"/>
+      <GROUP id="{C1F0525C-9DC0-0720-7E21-4FE9A4FFB73B}" name="Components">
+        <FILE id="YEzjqg" name="PluginInfoComponent.cpp" compile="1" resource="0"
+              file="Source/PluginInfoComponent.cpp"/>
+        <FILE id="QAlkxj" name="PluginInfoComponent.h" compile="0" resource="0"
+              file="Source/PluginInfoComponent.h"/>
+        <FILE id="pX5RqK" name="ResponseCurveComponent.cpp" compile="1" resource="0"
+              file="Source/ResponseCurveComponent.cpp"/>
+        <FILE id="uzHQBj" name="ResponseCurveComponent.h" compile="0" resource="0"
+              file="Source/ResponseCurveComponent.h"/>
+      </GROUP>
+      <FILE id="pMbb5P" name="PowerButton.cpp" compile="1" resource="0" file="Source/PowerButton.cpp"/>
+      <FILE id="fb9jIe" name="PowerButton.h" compile="0" resource="0" file="Source/PowerButton.h"/>
+      <FILE id="M2QH5Z" name="PathProducer.cpp" compile="1" resource="0"
+            file="Source/PathProducer.cpp"/>
+      <FILE id="hTvsWg" name="PathProducer.h" compile="0" resource="0" file="Source/PathProducer.h"/>
+      <FILE id="n7yoD4" name="QFifo.h" compile="0" resource="0" file="Source/QFifo.h"/>
+      <FILE id="Ota7AD" name="PluginProcessor.cpp" compile="1" resource="0"
+            file="Source/PluginProcessor.cpp"/>
+      <FILE id="JEvJcI" name="PluginProcessor.h" compile="0" resource="0"
+            file="Source/PluginProcessor.h"/>
+      <FILE id="tpxbyW" name="PluginEditor.cpp" compile="1" resource="0"
+            file="Source/PluginEditor.cpp"/>
+      <FILE id="ssaY5O" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+    </GROUP>
+  </MAINGROUP>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
+  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
+  <EXPORTFORMATS>
+    <VS2022 targetFolder="Builds/VisualStudio2022">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="QuasarEQ"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="QuasarEQ"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_audio_basics" path="../juce-8.0.10-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../juce-8.0.10-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../juce-8.0.10-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../juce-8.0.10-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../juce-8.0.10-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../juce-8.0.10-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../juce-8.0.10-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../juce-8.0.10-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../juce-8.0.10-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../juce-8.0.10-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../juce-8.0.10-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../juce-8.0.10-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../juce-8.0.10-windows/JUCE/modules"/>
+      </MODULEPATHS>
+    </VS2022>
+  </EXPORTFORMATS>
+</JUCERPROJECT>
