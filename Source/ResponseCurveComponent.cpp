@@ -37,18 +37,14 @@ void VisualizerComponent::parameterChanged(const juce::String& parameterID, floa
 
 juce::Rectangle<int> VisualizerComponent::getCurveArea()
 {
-    auto a = getRenderArea().reduced(margin << 1);
+    auto a = getLocalBounds().reduced(margin << 1);
     a.removeFromRight(margin * 6);
     return a;
 }
 juce::Rectangle<int> VisualizerComponent::getLevelMeterArea()
 {
-    auto a = getRenderArea().reduced(margin << 1);
+    auto a = getLocalBounds().reduced(margin << 1);
     return a.removeFromRight(margin << 1);
-}
-juce::Rectangle<int> VisualizerComponent::getRenderArea()
-{
-    return getLocalBounds();
 }
 void VisualizerComponent::paint(juce::Graphics& g)
 {
@@ -241,7 +237,7 @@ void VisualizerComponent::resized()
     gridCache = juce::Image(juce::Image::ARGB, getWidth(), getHeight(), true);
     juce::Graphics g(gridCache);
     g.setColour(quasar::colours::labelBackground);
-    g.fillRoundedRectangle(getRenderArea().toFloat(), 5.0f);
+    g.fillRoundedRectangle(getLocalBounds().toFloat(), 5.0f);
     g.setColour(juce::Colours::black);
     g.fillRect(getCurveArea());
     g.fillRect(getLevelMeterArea());
