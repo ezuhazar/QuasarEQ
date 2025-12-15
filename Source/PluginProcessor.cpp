@@ -26,19 +26,6 @@ QuasarEQAudioProcessor::QuasarEQAudioProcessor()
     apvts.addParameterListener("outGain", this);
     apvts.addParameterListener("bypass", this);
 }
-QuasarEQAudioProcessor::~QuasarEQAudioProcessor()
-{
-    for (int i = 0; i < NUM_BANDS; ++i)
-    {
-        juce::String index = juce::String(i + 1);
-        apvts.removeParameterListener("Freq" + index, this);
-        apvts.removeParameterListener("Gain" + index, this);
-        apvts.removeParameterListener("Q" + index, this);
-        apvts.removeParameterListener("Type" + index, this);
-    }
-    apvts.removeParameterListener("outGain", this);
-    apvts.removeParameterListener("bypass", this);
-}
 const juce::String QuasarEQAudioProcessor::getName() const
 {
     return JucePlugin_Name;
@@ -211,10 +198,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::crea
     const float max = 20000.0f;
     juce::NormalisableRange<float> QRange (0.05f, 12.0f, 0.001f);
     juce::NormalisableRange<float> FreqRange (min, max, 0.1f);
-    const float aaa = std::sqrtf(min * max);
     const float inverseRootTwo = 1.0f / juce::MathConstants<float>::sqrt2;
     QRange.setSkewForCentre(inverseRootTwo);
-    FreqRange.setSkewForCentre(aaa);
+    FreqRange.setSkewForCentre(std::sqrtf(min * max));
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
     layout.add(std::make_unique<juce::AudioParameterFloat>("outGain", "Out Gain", juce::NormalisableRange<float>(-24.0f, 24.0f, 0.001f), 0.0f, "dB"));
     layout.add(std::make_unique<juce::AudioParameterBool>("bypass", "Bypass", false));
