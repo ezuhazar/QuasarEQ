@@ -38,6 +38,10 @@ public:
     std::atomic<bool> parametersChanged {true};
     void updateFilters();
     void parameterChanged(const juce::String& parameterID, float newValu);
+    const std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS>& getSharedCoefficients() const
+    {
+        return sharedCoefficients;
+    }
 private:
     //--------------------------------------------------------------------------------
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
