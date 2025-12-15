@@ -246,11 +246,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::crea
     }
     return layout;
 }
-
-double QuasarEQAudioProcessor::getFilterSampleRate()
-{
-    return getSampleRate();
-}
 void QuasarEQAudioProcessor::updateFilters()
 {
     for (int i = 0; i < NUM_BANDS; ++i)

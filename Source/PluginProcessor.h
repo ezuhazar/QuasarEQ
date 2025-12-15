@@ -39,7 +39,6 @@ public:
     std::atomic<bool> parametersChanged {true};
     void updateFilters();
     void parameterChanged(const juce::String& parameterID, float newValu);
-    double getFilterSampleRate();
 private:
     //--------------------------------------------------------------------------------
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();

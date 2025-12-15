@@ -151,7 +151,7 @@ void VisualizerComponent::calculateResponseCurve()
     responseCurveMagnitude.resize(curveSize, 0.0f);
     const float minHz = MIN_HZ;
     const float maxHz = MAX_HZ;
-    double sampleRate = audioProcessor.getFilterSampleRate();
+    double sampleRate = audioProcessor.getSampleRate();
     auto& apvts = audioProcessor.apvts;
     std::vector<juce::dsp::IIR::Coefficients<float>::Ptr> allCoefficients;
     for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
