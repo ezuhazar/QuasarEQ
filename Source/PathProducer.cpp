@@ -95,7 +95,7 @@ void PathProducer::generatePath(const float* renderData, const float minDB, cons
         {
             SmoothGains[i] = Gains[i];
         }
-        currentDecibels[i] = juce::Decibels::gainToDecibels(SmoothGains[i], minDB);
+        currentDecibels[i] = juce::Decibels::gainToDecibels(SmoothGains[i]);
         peakFallVelocity[i] += peakFallRate;
         peakHoldDecibels[i] -= peakFallVelocity[i] * deltaTime;
         if (currentDecibels[i] >= peakHoldDecibels[i])
