@@ -73,14 +73,8 @@ void QuasarEQAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
     spec.numChannels = (juce::uint32)getTotalNumOutputChannels();
     leftChannelFifo.prepare(samplesPerBlock);
     rightChannelFifo.prepare(samplesPerBlock);
-
-    for (int i = 0; i < NUM_BANDS; ++i)
-    {
-        leftFilters[i].prepare(spec);
-        rightFilters[i].prepare(spec);
-        leftFilters[i].reset();
-        rightFilters[i].reset();
-    }
+    filterChain.prepare(spec);
+    filterChain.reset();
     updateFilters();
 }
 void QuasarEQAudioProcessor::releaseResources()
@@ -126,33 +120,12 @@ void QuasarEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     {
         updateFilters();
     }
-    // ***********************************************************************************************
-    // !!! IMPORTANT !!!
-    // DO NOT CREATE ProcessContextReplacing DIRECTLY FROM block.getSingleChannelBlock()
-    // IN RELEASE BUILDS THE COMPILER MAY OPTIMIZE AWAY THE TEMPORARY BLOCK,
-    // CAUSING UNDEFINED BEHAVIOR WHERE THE RIGHT CHANNEL BECOMES SILENT.
-    //
-    // ALWAYS STORE THE SINGLE-CHANNEL BLOCKS IN LOCAL VARIABLES FIRST.
-    // THIS GUARANTEES THEIR LIFETIME AND PREVENTS AGGRESSIVE OPTIMIZATION BUGS.
-    //
-    // DEBUG BUILD WORKS BY ACCIDENT - RELEASE WILL BREAK IF YOU CHANGE THIS.
-    // ***********************************************************************************************
     bool isBypassed = apvts.getRawParameterValue("bypass")->load();
     if (!isBypassed)
     {
         juce::dsp::AudioBlock<float> block(buffer);
-        auto leftBlock = block.getSingleChannelBlock(0); // MUST STORE LOCALLY
-        auto rightBlock = block.getSingleChannelBlock(1); // MUST STORE LOCALLY
-        juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
-        juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
-        for (int i = 0; i < NUM_BANDS; ++i)
-        {
-            leftFilters[i].process(leftContext);
-            rightFilters[i].process(rightContext);
-        }
-        float currentGainDB = apvts.getRawParameterValue("outGain")->load();
-        const float gainLinear = juce::Decibels::decibelsToGain(currentGainDB);
-        buffer.applyGain(gainLinear);
+        juce::dsp::ProcessContextReplacing<float> context(block);
+        filterChain.process(context);
     }
     leftChannelFifo.update(buffer);
     rightChannelFifo.update(buffer);
@@ -252,12 +225,25 @@ void QuasarEQAudioProcessor::updateFilters()
     }
     {
         juce::ScopedLock lock (coefficientsLock);
-        for (int i = 0; i < NUM_BANDS; ++i)
-        {
-            leftFilters[i].coefficients = newCoefs[i];
-            rightFilters[i].coefficients = newCoefs[i];
-            sharedCoefficients[i] = newCoefs[i];
-        }
+        filterChain.get<0>().state = newCoefs[0];
+        sharedCoefficients[0] = newCoefs[0];
+        filterChain.get<1>().state = newCoefs[1];
+        sharedCoefficients[1] = newCoefs[1];
+        filterChain.get<2>().state = newCoefs[2];
+        sharedCoefficients[2] = newCoefs[2];
+        filterChain.get<3>().state = newCoefs[3];
+        sharedCoefficients[3] = newCoefs[3];
+        filterChain.get<4>().state = newCoefs[4];
+        sharedCoefficients[4] = newCoefs[4];
+        filterChain.get<5>().state = newCoefs[5];
+        sharedCoefficients[5] = newCoefs[5];
+        filterChain.get<6>().state = newCoefs[6];
+        sharedCoefficients[6] = newCoefs[6];
+        filterChain.get<7>().state = newCoefs[7];
+        sharedCoefficients[7] = newCoefs[7];
+        float currentGainDB = apvts.getRawParameterValue("outGain")->load();
+        const float gainLinear = juce::Decibels::decibelsToGain(currentGainDB);
+        filterChain.get<NUM_BANDS>().setGainLinear(gainLinear);
     }
     parametersChanged.store(false);
 }
