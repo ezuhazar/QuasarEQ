@@ -221,6 +221,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::crea
 void QuasarEQAudioProcessor::updateFilters()
 {
     const double sampleRate = getSampleRate();
+    std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> newCoefs;
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         const juce::String index = juce::String(i + 1);
@@ -229,35 +230,45 @@ void QuasarEQAudioProcessor::updateFilters()
         const float gainLinear = juce::Decibels::decibelsToGain(gainDB);
         const float q = apvts.getRawParameterValue("Q" + index)->load();
         const int typeIndex = static_cast<int>(apvts.getRawParameterValue("Type" + index)->load());
-        juce::dsp::IIR::Coefficients<float>::Ptr coefs;
         switch (typeIndex)
         {
         case HighPass:
-            coefs = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, freq, q);
+            newCoefs[i] = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, freq, q);
             break;
         case HighShelf:
-            coefs = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, freq, q, gainLinear);
+            newCoefs[i] = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, freq, q, gainLinear);
             break;
         case LowPass:
-            coefs = juce::dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, freq, q);
+            newCoefs[i] = juce::dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, freq, q);
             break;
         case LowShelf:
-            coefs = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, freq, q, gainLinear);
+            newCoefs[i] = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, freq, q, gainLinear);
             break;
         case PeakFilter:
-            coefs = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, q, gainLinear);
+            newCoefs[i] = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, q, gainLinear);
             break;
         default:
-            coefs = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, q, gainLinear);
+            newCoefs[i] = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, q, gainLinear);
             break;
         }
-        leftFilters[i].coefficients = coefs;
-        rightFilters[i].coefficients = coefs;
-        sharedCoefficients[i] = coefs;
+    }
+    {
+        juce::ScopedLock lock (coefficientsLock);
+        for (int i = 0; i < NUM_BANDS; ++i)
+        {
+            leftFilters[i].coefficients = newCoefs[i];
+            rightFilters[i].coefficients = newCoefs[i];
+            sharedCoefficients[i] = newCoefs[i];
+        }
     }
     parametersChanged.store(false);
 }
 void QuasarEQAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
 {
     parametersChanged.store(true);
+}
+std::array<juce::dsp::IIR::Coefficients<float>::Ptr, QuasarEQAudioProcessor::NUM_BANDS> QuasarEQAudioProcessor::getSharedCoefficients() const
+{
+    juce::ScopedLock lock (coefficientsLock);
+    return sharedCoefficients;
 }

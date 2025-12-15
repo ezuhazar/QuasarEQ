@@ -152,7 +152,7 @@ void VisualizerComponent::calculateResponseCurve()
     double sampleRate = audioProcessor.getSampleRate();
     responseCurveMagnitude.clear();
     responseCurveMagnitude.resize(curveSize, 0.0f);
-    auto& allCoefficients = audioProcessor.getSharedCoefficients();
+    auto allCoefficients = audioProcessor.getSharedCoefficients();
     for (int i = 0; i < curveSize; ++i)
     {
         float normalizedX = (float)i / (float)(curveSize - 1);
