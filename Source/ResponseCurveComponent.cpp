@@ -1,6 +1,15 @@
 #include "ResponseCurveComponent.h"
 #include "QuasarHeader.h"
 
+enum FilterType
+{
+    HighPass,
+    HighShelf,
+    LowPass,
+    LowShelf,
+    PeakFilter
+};
+
 VisualizerComponent::VisualizerComponent(QuasarEQAudioProcessor& p):
     audioProcessor(p),
     pathProducer(audioProcessor.leftChannelFifo, audioProcessor.rightChannelFifo),
@@ -152,7 +161,7 @@ void VisualizerComponent::calculateResponseCurve()
     const float maxHz = MAX_HZ;
     double sampleRate = audioProcessor.getFilterSampleRate();
     auto& apvts = audioProcessor.apvts;
-    std::vector<juce::dsp::IIR::Coefficients<double>::Ptr> allCoefficients;
+    std::vector<juce::dsp::IIR::Coefficients<float>::Ptr> allCoefficients;
     for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
     {
         juce::String index = juce::String(i + 1);
@@ -161,28 +170,28 @@ void VisualizerComponent::calculateResponseCurve()
         float Q = apvts.getRawParameterValue("Q" + index)->load();
         int typeIndex = static_cast<int>(apvts.getRawParameterValue("Type" + index)->load());
         float gainLinear = juce::Decibels::decibelsToGain(gainDb);
-        juce::dsp::IIR::Coefficients<double>::Ptr coefs;
-        if (typeIndex == 0)
+        juce::dsp::IIR::Coefficients<float>::Ptr coefs;
+        switch (typeIndex)
         {
-            coefs = juce::dsp::IIR::Coefficients<double>::makeHighPass(sampleRate, freq, Q);
+        case HighPass:
+            coefs = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, freq, Q);
+            break;
+        case HighShelf:
+            coefs = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, freq, Q, gainLinear);
+            break;
+        case LowPass:
+            coefs = juce::dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, freq, Q);
+            break;
+        case LowShelf:
+            coefs = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, freq, Q, gainLinear);
+            break;
+        case PeakFilter:
+            coefs = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, Q, gainLinear);
+            break;
+        default:
+            coefs = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, Q, gainLinear);
+            break;
         }
-        else if (typeIndex == 1)
-        {
-            coefs = juce::dsp::IIR::Coefficients<double>::makeHighShelf(sampleRate, freq, Q, gainLinear);
-        }
-        else if (typeIndex == 2)
-        {
-            coefs = juce::dsp::IIR::Coefficients<double>::makeLowPass(sampleRate, freq, Q);
-        }
-        else if (typeIndex == 3)
-        {
-            coefs = juce::dsp::IIR::Coefficients<double>::makeLowShelf(sampleRate, freq, Q, gainLinear);
-        }
-        else
-        {
-            coefs = juce::dsp::IIR::Coefficients<double>::makePeakFilter(sampleRate, freq, Q, gainLinear);
-        }
-
         allCoefficients.push_back(coefs);
     }
     for (int i = 0; i < curveSize; ++i)
@@ -196,12 +205,10 @@ void VisualizerComponent::calculateResponseCurve()
         }
         responseCurveMagnitude[i] = juce::Decibels::gainToDecibels(totalGainLinear);
     }
-
     auto bounds = getCurveArea().toFloat();
     const float minDb = -24.0f;
     const float maxDb = 24.0f;
     responseCurvePath.clear();
-
     responseCurvePath.startNewSubPath(getLocalBounds().toFloat().getX(), getLocalBounds().toFloat().getCentreY());
     for (size_t i = 0; i < responseCurveMagnitude.size(); ++i)
     {
@@ -214,7 +221,6 @@ void VisualizerComponent::calculateResponseCurve()
         responseCurvePath.lineTo(x, y);
     }
     responseCurvePath.lineTo(getLocalBounds().toFloat().getRight(), getLocalBounds().toFloat().getCentreY());
-
     parametersNeedUpdate = false;
 }
 
