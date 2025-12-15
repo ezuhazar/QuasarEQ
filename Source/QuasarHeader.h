@@ -4,6 +4,15 @@
 #include <JuceHeader.h>
 #include "Aaaa.h"
 
+enum FilterType
+{
+	HighPass,
+	HighShelf,
+	LowPass,
+	LowShelf,
+	PeakFilter
+};
+
 namespace quasar
 {
 	namespace colours

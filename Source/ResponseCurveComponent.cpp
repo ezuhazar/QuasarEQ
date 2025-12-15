@@ -1,14 +1,6 @@
 #include "ResponseCurveComponent.h"
 #include "QuasarHeader.h"
 
-enum FilterType
-{
-    HighPass,
-    HighShelf,
-    LowPass,
-    LowShelf,
-    PeakFilter
-};
 
 VisualizerComponent::VisualizerComponent(QuasarEQAudioProcessor& p):
     audioProcessor(p),

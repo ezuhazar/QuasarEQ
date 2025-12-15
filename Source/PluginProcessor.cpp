@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "QuasarHeader.h"
 
 QuasarEQAudioProcessor::QuasarEQAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -269,25 +270,26 @@ void QuasarEQAudioProcessor::updateFilters()
         int typeIndex = static_cast<int>(apvts.getRawParameterValue("Type" + index)->load());
         float gainLinear = juce::Decibels::decibelsToGain(gainDb);
         juce::dsp::IIR::Coefficients<float>::Ptr coefs;
-        if (typeIndex == 0)
+        switch (typeIndex)
         {
+        case HighPass:
             coefs = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, freq, Q);
-        }
-        else if (typeIndex == 1)
-        {
+            break;
+        case HighShelf:
             coefs = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, freq, Q, gainLinear);
-        }
-        else if (typeIndex == 2)
-        {
+            break;
+        case LowPass:
             coefs = juce::dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, freq, Q);
-        }
-        else if (typeIndex == 3)
-        {
+            break;
+        case LowShelf:
             coefs = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, freq, Q, gainLinear);
-        }
-        else
-        {
+            break;
+        case PeakFilter:
             coefs = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, Q, gainLinear);
+            break;
+        default:
+            coefs = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, Q, gainLinear);
+            break;
         }
         leftFilters[i].coefficients = coefs;
         rightFilters[i].coefficients = coefs;
