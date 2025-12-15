@@ -42,7 +42,7 @@ private:
 	juce::AudioBuffer<float> monoAverageBuffer;
 	juce::dsp::FFT fft {FFT_ORDER};
 	juce::dsp::WindowingFunction<float> windowing {size_t(FFT_SIZE), juce::dsp::WindowingFunction<float>::blackmanHarris, true};
-	void generatePath(const float* renderData, const float minDB, const float deltaTime);
+	void generatePath(const float* renderData, const float deltaTime);
 	std::vector<float> peakFallVelocity;
 	std::vector<float> peakHoldDecibels;
 	std::vector<float> Gains;

@@ -42,13 +42,13 @@ void PathProducer::process(float minDB, double sampleRate)
             windowing.multiplyWithWindowingTable(fftDataWritePointer, FFT_SIZE);
             fft.performFrequencyOnlyForwardTransform(fftDataWritePointer);
             juce::FloatVectorOperations::multiply(fftDataWritePointer, fftDataWritePointer, INVERSE_NUM_BINS, NUM_BINS);
-            generatePath(fftDataWritePointer, minDB, static_cast<float>(incomingSize) / sampleRate);
+            generatePath(fftDataWritePointer, static_cast<float>(incomingSize) / sampleRate);
         }
     }
     if (aaa)
     {
 
-        pathFifo.push({currentDecibels, peakHoldDecibels, juce::Decibels::gainToDecibels(smoothedLeftGain, minDB), juce::Decibels::gainToDecibels(smoothedRightGain, minDB)});
+        pathFifo.push({currentDecibels, peakHoldDecibels, juce::Decibels::gainToDecibels(smoothedLeftGain), juce::Decibels::gainToDecibels(smoothedRightGain)});
 
     }
 }
@@ -70,7 +70,7 @@ std::vector<float> PathProducer::makeFreqLUT(const double sampleRate, const floa
     }
     return frequencyLUT;
 }
-void PathProducer::generatePath(const float* renderData, const float minDB, const float deltaTime)
+void PathProducer::generatePath(const float* renderData, const float deltaTime)
 {
     for (int levelIndex = 0, sourceDataIndex = 0, outputIndex = 0; levelIndex < NUM_SECTIONS; ++levelIndex)
     {
