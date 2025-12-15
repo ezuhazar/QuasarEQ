@@ -16,7 +16,7 @@ class PathProducer
 {
 public:
 	PathProducer(SingleChannelSampleFifo& leftScsf, SingleChannelSampleFifo& rightScsf);
-	void process(float minDB, double sampleRate);
+	void process(double sampleRate);
 	int getNumPathsAvailable() const;
 	bool getPath(SpectrumRenderData& path);
 	std::vector<float> makeFreqLUT(const double sampleRate, const float minHz, const float maxHz) const;

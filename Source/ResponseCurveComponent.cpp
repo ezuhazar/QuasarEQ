@@ -302,7 +302,7 @@ void VisualizerComponent::AnalyzerThread::run()
 {
     while (!threadShouldExit())
     {
-        producer.process(responseCurveComponent.MIN_DBFS, responseCurveComponent.audioProcessor.getSampleRate());
+        producer.process(responseCurveComponent.audioProcessor.getSampleRate());
         if (!responseCurveComponent.isUpdatePending() && producer.getNumPathsAvailable() > 0)
         {
             responseCurveComponent.triggerAsyncUpdate();

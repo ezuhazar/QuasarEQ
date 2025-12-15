@@ -12,7 +12,7 @@ PathProducer::PathProducer(SingleChannelSampleFifo& leftScsf, SingleChannelSampl
     Gains.assign(RENDER_OUT_SIZE, 0.0f);
     SmoothGains.assign(RENDER_OUT_SIZE, 0.0f);
 }
-void PathProducer::process(float minDB, double sampleRate)
+void PathProducer::process(double sampleRate)
 {
     juce::AudioBuffer<float> leftIncomingBuffer, rightIncomingBuffer;
 
@@ -114,7 +114,7 @@ void PathProducer::generatePath(const float* renderData, const float deltaTime)
     {
         smoothedLeftGain = currentLeftGain;
     }
-    if (currentRightGain  < smoothedRightGain)
+    if (currentRightGain < smoothedRightGain)
     {
         smoothedRightGain = levelMeterAlphaSmooth * currentRightGain + levelMeterOneMinusAlpha * smoothedRightGain;
     }
