@@ -220,6 +220,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::crea
 }
 void QuasarEQAudioProcessor::updateFilters()
 {
+    const double sampleRate = getSampleRate();
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         const juce::String index = juce::String(i + 1);
@@ -228,7 +229,6 @@ void QuasarEQAudioProcessor::updateFilters()
         const float gainLinear = juce::Decibels::decibelsToGain(gainDB);
         const float q = apvts.getRawParameterValue("Q" + index)->load();
         const int typeIndex = static_cast<int>(apvts.getRawParameterValue("Type" + index)->load());
-        const double sampleRate = getSampleRate();
         juce::dsp::IIR::Coefficients<float>::Ptr coefs;
         switch (typeIndex)
         {
