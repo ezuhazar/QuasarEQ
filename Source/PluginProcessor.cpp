@@ -195,23 +195,21 @@ juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::crea
 {
     const float min = 20.0f;
     const float max = 20000.0f;
+    const float inverseRootTwo = 1.0f / juce::MathConstants<float>::sqrt2;
     juce::NormalisableRange<float> QRange (0.05f, 12.0f, 0.001f);
     juce::NormalisableRange<float> FreqRange (min, max, 0.1f);
-    const float inverseRootTwo = 1.0f / juce::MathConstants<float>::sqrt2;
     QRange.setSkewForCentre(inverseRootTwo);
     FreqRange.setSkewForCentre(std::sqrtf(min * max));
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
     layout.add(std::make_unique<juce::AudioParameterFloat>("outGain", "Out Gain", juce::NormalisableRange<float>(-24.0f, 24.0f, 0.001f), 0.0f, "dB"));
     layout.add(std::make_unique<juce::AudioParameterBool>("bypass", "Bypass", false));
-
-    const std::vector<float> aad = {
+    const std::vector<float> foooo = {
         50.0f, 100.0f, 200.0f, 500.0f, 1000.0f, 2000.0f, 5000.0f, 10000.0f
     };
-
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         juce::String index = juce::String(i + 1);
-        layout.add(std::make_unique<juce::AudioParameterFloat>("Freq" + index, "Band " + index + " Freq", FreqRange, aad[i], "Hz"));
+        layout.add(std::make_unique<juce::AudioParameterFloat>("Freq" + index, "Band " + index + " Freq", FreqRange, foooo[i], "Hz"));
         layout.add(std::make_unique<juce::AudioParameterFloat>("Gain" + index, "Band " + index + " Gain", juce::NormalisableRange<float>(-24.0f, 24.0f, 0.01f), 0.0f, "dB"));
         layout.add(std::make_unique<juce::AudioParameterFloat>("Q" + index, "Band " + index + " Q", QRange, inverseRootTwo));
         layout.add(std::make_unique<juce::AudioParameterChoice>("Type" + index, "Band " + index + " Type", juce::StringArray {"HighPass", "HighShelf", "LowPass", "LowShelf", "PeakFilter"}, 4));
