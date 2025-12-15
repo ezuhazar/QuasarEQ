@@ -152,7 +152,7 @@ void QuasarEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         }
         float currentGainDB = apvts.getRawParameterValue("outGain")->load();
         const float gainLinear = juce::Decibels::decibelsToGain(currentGainDB);
-        buffer.applyGain(gainLinear); 
+        buffer.applyGain(gainLinear);
     }
     leftChannelFifo.update(buffer);
     rightChannelFifo.update(buffer);
@@ -214,8 +214,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::crea
         layout.add(std::make_unique<juce::AudioParameterFloat>("Freq" + index, "Band " + index + " Freq", FreqRange, aad[i], "Hz"));
         layout.add(std::make_unique<juce::AudioParameterFloat>("Gain" + index, "Band " + index + " Gain", juce::NormalisableRange<float>(-24.0f, 24.0f, 0.01f), 0.0f, "dB"));
         layout.add(std::make_unique<juce::AudioParameterFloat>("Q" + index, "Band " + index + " Q", QRange, inverseRootTwo));
-        layout.add(std::make_unique<juce::AudioParameterChoice>("Type" + index, "Band " + index + " Type", 
-            juce::StringArray {"HighPass", "HighShelf", "LowPass", "LowShelf", "PeakFilter"}, 4));
+        layout.add(std::make_unique<juce::AudioParameterChoice>("Type" + index, "Band " + index + " Type", juce::StringArray {"HighPass", "HighShelf", "LowPass", "LowShelf", "PeakFilter"}, 4));
     }
     return layout;
 }
@@ -223,13 +222,13 @@ void QuasarEQAudioProcessor::updateFilters()
 {
     for (int i = 0; i < NUM_BANDS; ++i)
     {
-        juce::String index = juce::String(i + 1);
+        const juce::String index = juce::String(i + 1);
+        const float freq = apvts.getRawParameterValue("Freq" + index)->load();
+        const float gainDB = apvts.getRawParameterValue("Gain" + index)->load();
+        const float gainLinear = juce::Decibels::decibelsToGain(gainDB);
+        const float q = apvts.getRawParameterValue("Q" + index)->load();
+        const int typeIndex = static_cast<int>(apvts.getRawParameterValue("Type" + index)->load());
         const double sampleRate = getSampleRate();
-        float freq = apvts.getRawParameterValue("Freq" + index)->load();
-        float gainDB = apvts.getRawParameterValue("Gain" + index)->load();
-        float q = apvts.getRawParameterValue("Q" + index)->load();
-        int typeIndex = static_cast<int>(apvts.getRawParameterValue("Type" + index)->load());
-        float gainLinear = juce::Decibels::decibelsToGain(gainDB);
         juce::dsp::IIR::Coefficients<float>::Ptr coefs;
         switch (typeIndex)
         {
