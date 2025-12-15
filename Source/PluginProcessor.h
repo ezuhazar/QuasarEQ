@@ -33,8 +33,6 @@ public:
     juce::AudioProcessorValueTreeState apvts;
     static constexpr int NUM_BANDS = 8;
     using Filter = juce::dsp::IIR::Filter<float>;
-    std::array<Filter, NUM_BANDS> leftFilters;
-    std::array<Filter, NUM_BANDS> rightFilters;
     std::atomic<bool> parametersChanged {true};
     void updateFilters();
     void parameterChanged(const juce::String& parameterID, float newValu);
