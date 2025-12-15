@@ -15,7 +15,6 @@ private:
 	void handleAsyncUpdate() override;
 	void resized() override;
 	void parameterChanged(const juce::String& parameterID, float newValue) override;
-	juce::Rectangle<int> getRenderArea();
 	juce::Rectangle<int> getLevelMeterArea();
 	juce::Rectangle<int> getCurveArea();
 	juce::Path createBezierPath(const std::vector<juce::Point<float>>& points);
