@@ -140,7 +140,6 @@ void QuasarEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     bool isBypassed = apvts.getRawParameterValue("bypass")->load();
     if (!isBypassed)
     {
-        
         juce::dsp::AudioBlock<float> block(buffer);
         auto leftBlock = block.getSingleChannelBlock(0); // MUST STORE LOCALLY
         auto rightBlock = block.getSingleChannelBlock(1); // MUST STORE LOCALLY
@@ -258,7 +257,6 @@ void QuasarEQAudioProcessor::updateFilters()
     }
     parametersChanged.store(false);
 }
-
 void QuasarEQAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
 {
     parametersChanged.store(true);
