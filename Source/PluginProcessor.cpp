@@ -45,27 +45,15 @@ const juce::String QuasarEQAudioProcessor::getName() const
 }
 bool QuasarEQAudioProcessor::acceptsMidi() const
 {
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
+    return JucePlugin_WantsMidiInput;
 }
 bool QuasarEQAudioProcessor::producesMidi() const
 {
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
+    return JucePlugin_ProducesMidiOutput;
 }
 bool QuasarEQAudioProcessor::isMidiEffect() const
 {
-#if JucePlugin_IsMidiEffect
-    return true;
-#else
-    return false;
-#endif
+    return JucePlugin_IsMidiEffect;
 }
 double QuasarEQAudioProcessor::getTailLengthSeconds() const
 {
