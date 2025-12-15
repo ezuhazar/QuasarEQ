@@ -48,8 +48,8 @@ double QuasarEQAudioProcessor::getTailLengthSeconds() const
 }
 int QuasarEQAudioProcessor::getNumPrograms()
 {
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-    // so this should be at least 1, even if you're not really implementing programs.
+    // NB: some hosts don't cope very well if you tell them there are 0 programs, so this should be at least 1, even if you're not really implementing programs.
+    return 1;
 }
 int QuasarEQAudioProcessor::getCurrentProgram()
 {
@@ -128,7 +128,8 @@ void QuasarEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
 }
 bool QuasarEQAudioProcessor::hasEditor() const
 {
-    return true; // (change this to false if you choose to not supply an editor)
+    // (change this to false if you choose to not supply an editor)
+    return true;
 }
 juce::AudioProcessorEditor* QuasarEQAudioProcessor::createEditor()
 {
