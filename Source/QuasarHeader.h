@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <JuceHeader.h>
+#include "Aaaa.h"
 
 namespace quasar
 {
