@@ -120,13 +120,9 @@ void QuasarEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     {
         updateFilters();
     }
-    bool isBypassed = apvts.getRawParameterValue("bypass")->load();
-    if (!isBypassed)
-    {
-        juce::dsp::AudioBlock<float> block(buffer);
-        juce::dsp::ProcessContextReplacing<float> context(block);
-        filterChain.process(context);
-    }
+    juce::dsp::AudioBlock<float> block(buffer);
+    juce::dsp::ProcessContextReplacing<float> context(block);
+    filterChain.process(context);
     leftChannelFifo.update(buffer);
     rightChannelFifo.update(buffer);
 }
@@ -229,6 +225,7 @@ void QuasarEQAudioProcessor::updateFilters()
         {
             sharedCoefficients[i] = newCoefs[i];
         }
+        const bool isBypassed = apvts.getRawParameterValue("bypass")->load();
         const float currentGainDB = apvts.getRawParameterValue("outGain")->load();
         const float gainLinear = juce::Decibels::decibelsToGain(currentGainDB);
         *filterChain.get<0>().state = *newCoefs[0];
@@ -240,6 +237,15 @@ void QuasarEQAudioProcessor::updateFilters()
         *filterChain.get<6>().state = *newCoefs[6];
         *filterChain.get<7>().state = *newCoefs[7];
         filterChain.get<8>().setGainLinear(gainLinear);
+        filterChain.setBypassed<0>(isBypassed);
+        filterChain.setBypassed<1>(isBypassed);
+        filterChain.setBypassed<2>(isBypassed);
+        filterChain.setBypassed<3>(isBypassed);
+        filterChain.setBypassed<4>(isBypassed);
+        filterChain.setBypassed<5>(isBypassed);
+        filterChain.setBypassed<6>(isBypassed);
+        filterChain.setBypassed<7>(isBypassed);
+        filterChain.setBypassed<8>(isBypassed);
     }
     parametersChanged.store(false);
 }
