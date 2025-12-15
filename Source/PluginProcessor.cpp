@@ -208,7 +208,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::crea
     };
     for (int i = 0; i < NUM_BANDS; ++i)
     {
-        juce::String index = juce::String(i + 1);
+        const juce::String index = juce::String(i + 1);
         layout.add(std::make_unique<juce::AudioParameterFloat>("Freq" + index, "Band " + index + " Freq", FreqRange, initialFrequencies[i], "Hz"));
         layout.add(std::make_unique<juce::AudioParameterFloat>("Gain" + index, "Band " + index + " Gain", juce::NormalisableRange<float>(-24.0f, 24.0f, 0.01f), 0.0f, "dB"));
         layout.add(std::make_unique<juce::AudioParameterFloat>("Q" + index, "Band " + index + " Q", QRange, defaultQValue));
