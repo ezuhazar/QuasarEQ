@@ -7,7 +7,6 @@ class QuasarEQAudioProcessor: public juce::AudioProcessor, public juce::ChangeBr
 {
 public:
     QuasarEQAudioProcessor();
-    ~QuasarEQAudioProcessor() override;
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 #ifndef JucePlugin_PreferredChannelConfigurations
