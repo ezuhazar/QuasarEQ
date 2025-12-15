@@ -10,10 +10,6 @@ namespace DSPMath
 template <typename FloatType>
 static FloatType getCosineTerm (const size_t harmonicOrder, const size_t i, const size_t windowSize) noexcept
 {
-    if (windowSize <= 1)
-    {
-        return static_cast<FloatType>(1);
-    }
     return std::cos (static_cast<FloatType>(harmonicOrder) * static_cast<FloatType>(i) * static_cast<FloatType>(DSPMath::tau_ld) / static_cast<FloatType> (windowSize - 1));
 }
 
@@ -30,5 +26,15 @@ void calculateBlackmanHarris (FloatType* outputData, const size_t numSamples) no
         const auto cos2 = getCosineTerm<FloatType>(2, i, numSamples);
         const auto cos3 = getCosineTerm<FloatType>(3, i, numSamples);
         outputData[i] = a0 - a1 * cos1 + a2 * cos2 - a3 * cos3;
+    }
+    FloatType sum (0);
+    for (size_t i = 0; i < numSamples; ++i)
+    {
+        sum += outputData[i];
+    }
+    const auto factor = static_cast<FloatType> (numSamples) / sum;
+    for (size_t i = 0; i < numSamples; ++i)
+    {
+        outputData[i] *= factor;
     }
 }
