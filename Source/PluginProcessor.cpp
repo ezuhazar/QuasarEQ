@@ -253,6 +253,7 @@ void QuasarEQAudioProcessor::updateFilters()
         }
         leftFilters[i].coefficients = coefs;
         rightFilters[i].coefficients = coefs;
+        sharedCoefficients[i] = coefs;
     }
     parametersChanged.store(false);
 }
