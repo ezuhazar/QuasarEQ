@@ -43,10 +43,5 @@ public:
 private:
     //--------------------------------------------------------------------------------
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-    juce::dsp::Oversampling<float> oversampler {
-        2,
-        2,
-        juce::dsp::Oversampling<float>::filterHalfBandFIREquiripple
-    };
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(QuasarEQAudioProcessor);
 };

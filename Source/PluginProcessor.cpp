@@ -99,10 +99,6 @@ void QuasarEQAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
     leftChannelFifo.prepare(samplesPerBlock);
     rightChannelFifo.prepare(samplesPerBlock);
 
-    oversampler.reset();
-    oversampler.initProcessing(samplesPerBlock);
-    spec.sampleRate *= oversampler.getOversamplingFactor();
-
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         leftFilters[i].prepare(spec);
@@ -171,9 +167,8 @@ void QuasarEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     {
         
         juce::dsp::AudioBlock<float> block(buffer);
-        auto oversampledBlock = oversampler.processSamplesUp(block);
-        auto leftBlock = oversampledBlock.getSingleChannelBlock(0); // MUST STORE LOCALLY
-        auto rightBlock = oversampledBlock.getSingleChannelBlock(1); // MUST STORE LOCALLY
+        auto leftBlock = block.getSingleChannelBlock(0); // MUST STORE LOCALLY
+        auto rightBlock = block.getSingleChannelBlock(1); // MUST STORE LOCALLY
         juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
         juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
         for (int i = 0; i < NUM_BANDS; ++i)
@@ -183,8 +178,6 @@ void QuasarEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         }
         float currentGainDB = apvts.getRawParameterValue("outGain")->load();
         const float gainLinear = juce::Decibels::decibelsToGain(currentGainDB);
-
-        oversampler.processSamplesDown(block);
         buffer.applyGain(gainLinear); 
     }
     leftChannelFifo.update(buffer);
@@ -256,39 +249,39 @@ juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::crea
 
 double QuasarEQAudioProcessor::getFilterSampleRate()
 {
-    return getSampleRate() * oversampler.getOversamplingFactor();
+    return getSampleRate();
 }
 void QuasarEQAudioProcessor::updateFilters()
 {
     for (int i = 0; i < NUM_BANDS; ++i)
     {
-        double sampleRate = getSampleRate() * oversampler.getOversamplingFactor();
         juce::String index = juce::String(i + 1);
+        const double sampleRate = getSampleRate();
         float freq = apvts.getRawParameterValue("Freq" + index)->load();
-        float gainDb = apvts.getRawParameterValue("Gain" + index)->load();
-        float Q = apvts.getRawParameterValue("Q" + index)->load();
+        float gainDB = apvts.getRawParameterValue("Gain" + index)->load();
+        float q = apvts.getRawParameterValue("Q" + index)->load();
         int typeIndex = static_cast<int>(apvts.getRawParameterValue("Type" + index)->load());
-        float gainLinear = juce::Decibels::decibelsToGain(gainDb);
+        float gainLinear = juce::Decibels::decibelsToGain(gainDB);
         juce::dsp::IIR::Coefficients<float>::Ptr coefs;
         switch (typeIndex)
         {
         case HighPass:
-            coefs = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, freq, Q);
+            coefs = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, freq, q);
             break;
         case HighShelf:
-            coefs = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, freq, Q, gainLinear);
+            coefs = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, freq, q, gainLinear);
             break;
         case LowPass:
-            coefs = juce::dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, freq, Q);
+            coefs = juce::dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, freq, q);
             break;
         case LowShelf:
-            coefs = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, freq, Q, gainLinear);
+            coefs = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, freq, q, gainLinear);
             break;
         case PeakFilter:
-            coefs = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, Q, gainLinear);
+            coefs = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, q, gainLinear);
             break;
         default:
-            coefs = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, Q, gainLinear);
+            coefs = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, q, gainLinear);
             break;
         }
         leftFilters[i].coefficients = coefs;
