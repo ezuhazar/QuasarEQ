@@ -147,11 +147,12 @@ void VisualizerComponent::paint(juce::Graphics& g)
 void VisualizerComponent::calculateResponseCurve()
 {
     const int curveSize = getCurveArea().getWidth();
-    responseCurveMagnitude.clear();
-    responseCurveMagnitude.resize(curveSize, 0.0f);
     const float minHz = MIN_HZ;
     const float maxHz = MAX_HZ;
     double sampleRate = audioProcessor.getSampleRate();
+    /*
+    responseCurveMagnitude.clear();
+    responseCurveMagnitude.resize(curveSize, 0.0f);
     auto& apvts = audioProcessor.apvts;
     std::vector<juce::dsp::IIR::Coefficients<float>::Ptr> allCoefficients;
     for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
@@ -186,6 +187,8 @@ void VisualizerComponent::calculateResponseCurve()
         }
         allCoefficients.push_back(coefs);
     }
+    */
+    auto& allCoefficients = audioProcessor.getSharedCoefficients();
     for (int i = 0; i < curveSize; ++i)
     {
         float normalizedX = (float)i / (float)(curveSize - 1);
