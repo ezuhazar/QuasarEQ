@@ -150,44 +150,8 @@ void VisualizerComponent::calculateResponseCurve()
     const float minHz = MIN_HZ;
     const float maxHz = MAX_HZ;
     double sampleRate = audioProcessor.getSampleRate();
-    /*
     responseCurveMagnitude.clear();
     responseCurveMagnitude.resize(curveSize, 0.0f);
-    auto& apvts = audioProcessor.apvts;
-    std::vector<juce::dsp::IIR::Coefficients<float>::Ptr> allCoefficients;
-    for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
-    {
-        juce::String index = juce::String(i + 1);
-        float freq = apvts.getRawParameterValue("Freq" + index)->load();
-        float gainDb = apvts.getRawParameterValue("Gain" + index)->load();
-        float Q = apvts.getRawParameterValue("Q" + index)->load();
-        int typeIndex = static_cast<int>(apvts.getRawParameterValue("Type" + index)->load());
-        float gainLinear = juce::Decibels::decibelsToGain(gainDb);
-        juce::dsp::IIR::Coefficients<float>::Ptr coefs;
-        switch (typeIndex)
-        {
-        case HighPass:
-            coefs = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, freq, Q);
-            break;
-        case HighShelf:
-            coefs = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, freq, Q, gainLinear);
-            break;
-        case LowPass:
-            coefs = juce::dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, freq, Q);
-            break;
-        case LowShelf:
-            coefs = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, freq, Q, gainLinear);
-            break;
-        case PeakFilter:
-            coefs = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, Q, gainLinear);
-            break;
-        default:
-            coefs = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, Q, gainLinear);
-            break;
-        }
-        allCoefficients.push_back(coefs);
-    }
-    */
     auto& allCoefficients = audioProcessor.getSharedCoefficients();
     for (int i = 0; i < curveSize; ++i)
     {
