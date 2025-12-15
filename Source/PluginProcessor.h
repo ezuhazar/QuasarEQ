@@ -39,15 +39,16 @@ public:
     void updateFilters();
     void parameterChanged(const juce::String& parameterID, float newValu);
     std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> QuasarEQAudioProcessor::getSharedCoefficients() const;
+
+
+    using FilterBand = juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>;
+    using Gain = juce::dsp::Gain<float>;
+    juce::dsp::ProcessorChain<FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, Gain> filterChain;
+
+
 private:
     //--------------------------------------------------------------------------------
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-
-    /*
-    using FilterBand = juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>;
-    using Gain = juce::dsp::Gain<float>;
-    juce::dsp::ProcessorChain<FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, Gain> filter;
-    */
     juce::CriticalSection coefficientsLock;
     std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> sharedCoefficients;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(QuasarEQAudioProcessor);
