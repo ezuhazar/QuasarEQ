@@ -225,24 +225,20 @@ void QuasarEQAudioProcessor::updateFilters()
     }
     {
         juce::ScopedLock lock (coefficientsLock);
-        *filterChain.get<0>().state = *newCoefs[0];
-        sharedCoefficients[0] = newCoefs[0];
-        *filterChain.get<1>().state = *newCoefs[1];
-        sharedCoefficients[1] = newCoefs[1];
-        *filterChain.get<2>().state = *newCoefs[2];
-        sharedCoefficients[2] = newCoefs[2];
-        *filterChain.get<3>().state = *newCoefs[3];
-        sharedCoefficients[3] = newCoefs[3];
-        *filterChain.get<4>().state = *newCoefs[4];
-        sharedCoefficients[4] = newCoefs[4];
-        *filterChain.get<5>().state = *newCoefs[5];
-        sharedCoefficients[5] = newCoefs[5];
-        *filterChain.get<6>().state = *newCoefs[6];
-        sharedCoefficients[6] = newCoefs[6];
-        *filterChain.get<7>().state = *newCoefs[7];
-        sharedCoefficients[7] = newCoefs[7];
-        float currentGainDB = apvts.getRawParameterValue("outGain")->load();
+        for (int i = 0; i < NUM_BANDS; ++i)
+        {
+            sharedCoefficients[i] = newCoefs[i];
+        }
+        const float currentGainDB = apvts.getRawParameterValue("outGain")->load();
         const float gainLinear = juce::Decibels::decibelsToGain(currentGainDB);
+        *filterChain.get<0>().state = *newCoefs[0];
+        *filterChain.get<1>().state = *newCoefs[1];
+        *filterChain.get<2>().state = *newCoefs[2];
+        *filterChain.get<3>().state = *newCoefs[3];
+        *filterChain.get<4>().state = *newCoefs[4];
+        *filterChain.get<5>().state = *newCoefs[5];
+        *filterChain.get<6>().state = *newCoefs[6];
+        *filterChain.get<7>().state = *newCoefs[7];
         filterChain.get<8>().setGainLinear(gainLinear);
     }
     parametersChanged.store(false);
