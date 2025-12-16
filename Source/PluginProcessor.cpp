@@ -48,9 +48,10 @@ bool QuasarEQAudioProcessor::hasEditor() const { return true; }
 bool QuasarEQAudioProcessor::acceptsMidi() const { return JucePlugin_WantsMidiInput; }
 bool QuasarEQAudioProcessor::isMidiEffect() const { return JucePlugin_IsMidiEffect; }
 bool QuasarEQAudioProcessor::producesMidi() const { return JucePlugin_ProducesMidiOutput; }
-void QuasarEQAudioProcessor::changeProgramName(int index, const juce::String& newName) {}
 void QuasarEQAudioProcessor::releaseResources() {}
+void QuasarEQAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue) { parametersChanged.store(true); }
 void QuasarEQAudioProcessor::setCurrentProgram(int index) {}
+void QuasarEQAudioProcessor::changeProgramName(int index, const juce::String& newName) {}
 double QuasarEQAudioProcessor::getTailLengthSeconds() const { return 0.0; }
 const juce::String QuasarEQAudioProcessor::getName() const { return JucePlugin_Name; }
 const juce::String QuasarEQAudioProcessor::getProgramName(int index) { return {}; }
@@ -103,7 +104,6 @@ void QuasarEQAudioProcessor::setStateInformation(const void* data, int sizeInByt
         apvts.replaceState(tree);
     }
 }
-void QuasarEQAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue) { parametersChanged.store(true); }
 juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::createParameterLayout()
 {
     const float min = 20.0f;
