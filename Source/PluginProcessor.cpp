@@ -75,6 +75,8 @@ void QuasarEQAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
     rightChannelFifo.prepare(samplesPerBlock);
     filterChain.prepare(spec);
     filterChain.reset();
+    outputGain.prepare(spec);
+    outputGain.reset();
     updateFilters();
 }
 void QuasarEQAudioProcessor::releaseResources()
@@ -123,6 +125,7 @@ void QuasarEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     juce::dsp::AudioBlock<float> block(buffer);
     juce::dsp::ProcessContextReplacing<float> context(block);
     filterChain.process(context);
+    outputGain.process(context);
     leftChannelFifo.update(buffer);
     rightChannelFifo.update(buffer);
 }
@@ -233,6 +236,10 @@ void QuasarEQAudioProcessor::updateFilters()
         const bool isBypassed = apvts.getRawParameterValue("bypass")->load();
         const float currentGainDB = apvts.getRawParameterValue("outGain")->load();
         const float gainLinear = juce::Decibels::decibelsToGain(currentGainDB);
+
+        outputGain.get<0>().setGainLinear(gainLinear);
+        outputGain.setBypassed<0>(isBypassed);
+
         *filterChain.get<0>().state = *newCoefs[0];
         *filterChain.get<1>().state = *newCoefs[1];
         *filterChain.get<2>().state = *newCoefs[2];
@@ -241,7 +248,6 @@ void QuasarEQAudioProcessor::updateFilters()
         *filterChain.get<5>().state = *newCoefs[5];
         *filterChain.get<6>().state = *newCoefs[6];
         *filterChain.get<7>().state = *newCoefs[7];
-        filterChain.get<8>().setGainLinear(gainLinear);
         filterChain.setBypassed<0>(isBypassed);
         filterChain.setBypassed<1>(isBypassed);
         filterChain.setBypassed<2>(isBypassed);
@@ -250,7 +256,6 @@ void QuasarEQAudioProcessor::updateFilters()
         filterChain.setBypassed<5>(isBypassed);
         filterChain.setBypassed<6>(isBypassed);
         filterChain.setBypassed<7>(isBypassed);
-        filterChain.setBypassed<8>(isBypassed);
     }
     sendChangeMessage();
     parametersChanged.store(false);
