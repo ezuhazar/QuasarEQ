@@ -27,7 +27,6 @@ public:
     void changeProgramName(int index, const juce::String& newName) override;
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
-    //--------------------------------------------------------------------------------
     SingleChannelSampleFifo leftChannelFifo {Channel::Left};
     SingleChannelSampleFifo rightChannelFifo {Channel::Right};
     juce::AudioProcessorValueTreeState apvts;
@@ -35,7 +34,6 @@ public:
     void parameterChanged(const juce::String& parameterID, float newValue);
     std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> getSharedCoefficients() const;
 private:
-    //--------------------------------------------------------------------------------
     void updateFilters();
     std::atomic<bool> parametersChanged {true};
     std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> sharedCoefficients;
