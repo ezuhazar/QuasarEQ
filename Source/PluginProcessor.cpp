@@ -10,7 +10,6 @@ enum FilterType
     LowShelf,
     PeakFilter
 };
-
 QuasarEQAudioProcessor::QuasarEQAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
     : AudioProcessor(BusesProperties()
