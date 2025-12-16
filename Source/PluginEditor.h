@@ -8,6 +8,19 @@
 #include "MyGainSlider.h"
 #include "FilterBandControl.h"
 
+class CustomGainSlider: public juce::Slider
+{
+public:
+    CustomGainSlider()
+    {
+        setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+        setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
+    };
+    void mouseDoubleClick (const juce::MouseEvent& event) override
+    {
+    };
+};
+
 class QuasarEQAudioProcessorEditor: public juce::AudioProcessorEditor, public juce::ChangeListener
 {
 public:
