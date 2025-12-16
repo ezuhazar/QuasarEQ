@@ -21,13 +21,14 @@ QuasarEQAudioProcessor::QuasarEQAudioProcessor()
 {
     apvts.addParameterListener("outGain", this);
     apvts.addParameterListener("bypass", this);
+    const juce::StringArray bandParamPrefixes = {"Freq", "Gain", "Q", "Type"};
     for (int i = 0; i < NUM_BANDS; ++i)
     {
-        const juce::String index = juce::String(i + 1);
-        apvts.addParameterListener("Freq" + index, this);
-        apvts.addParameterListener("Gain" + index, this);
-        apvts.addParameterListener("Q" + index, this);
-        apvts.addParameterListener("Type" + index, this);
+        const juce::String index = juce::String (i + 1);
+        for (const auto& prefix : bandParamPrefixes)
+        {
+            apvts.addParameterListener (prefix + index, this);
+        }
     }
 }
 const juce::String QuasarEQAudioProcessor::getName() const
