@@ -12,7 +12,6 @@ VisualizerComponent::VisualizerComponent(QuasarEQAudioProcessor& p):
 void VisualizerComponent::parameterChanged(const juce::String& parameterID, float newValue)
 {
 }
-
 juce::Rectangle<int> VisualizerComponent::getCurveArea()
 {
     auto a = getLocalBounds().reduced(margin << 1);
@@ -80,7 +79,6 @@ void VisualizerComponent::paint(juce::Graphics& g)
     const float maxDb = 24.0f;
     auto& apvts = audioProcessor.apvts;
 
-
     for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
     {
         juce::String index = juce::String(i + 1);
@@ -111,7 +109,6 @@ void VisualizerComponent::paint(juce::Graphics& g)
         );
     }
 }
-
 void VisualizerComponent::calculateResponseCurve()
 {
     const int curveSize = getCurveArea().getWidth();
@@ -149,12 +146,10 @@ void VisualizerComponent::calculateResponseCurve()
     }
     responseCurvePath.lineTo(getLocalBounds().toFloat().getRight(), getLocalBounds().toFloat().getCentreY());
 }
-
 juce::Path VisualizerComponent::createBezierPath(const std::vector<juce::Point<float>>& points)
 {
     const size_t numPoints = points.size();
     const size_t a = 255;
-
     const size_t b = 0;
     if ((numPoints < 2))
     {
