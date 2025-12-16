@@ -193,7 +193,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::crea
     }
     return layout;
 }
-
 void QuasarEQAudioProcessor::updateFilters()
 {
     const double sampleRate = getSampleRate();

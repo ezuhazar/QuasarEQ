@@ -46,8 +46,8 @@ void QuasarEQAudioProcessorEditor::resized()
     visualizerComponent.setBounds(juce::Rectangle<int>(margin, topSectionHeight + margin * 2, analyzerSectionWidth, midSectionHeight));
     gainSlider.setBounds(juce::Rectangle<int>(analyzerSectionWidth + margin * 2, topSectionHeight + margin * 2, levelMeterSectionWidth, midSectionHeight));
     juce::Rectangle<int> knobsArea = mainArea.removeFromTop(knobsSectionHeight).reduced(4);
-    int bandWidth = knobsArea.getWidth() / 8;
-    for (int i = 0; i < 8; ++i)
+    int bandWidth = knobsArea.getWidth() / audioProcessor.NUM_BANDS;
+    for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
     {
         if (bandControls[i])
         {
