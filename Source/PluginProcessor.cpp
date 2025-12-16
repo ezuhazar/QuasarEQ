@@ -103,7 +103,6 @@ void QuasarEQAudioProcessor::setStateInformation(const void* data, int sizeInByt
         apvts.replaceState(tree);
     }
 }
-enum QuasarEQAudioProcessor::FilterType { HighPass, HighShelf, LowPass, LowShelf, PeakFilter };
 void QuasarEQAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue) { parametersChanged.store(true); }
 juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::createParameterLayout()
 {

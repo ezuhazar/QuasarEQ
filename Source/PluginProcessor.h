@@ -32,14 +32,14 @@ public:
     SingleChannelSampleFifo rightChannelFifo {Channel::Right};
     juce::AudioProcessorValueTreeState apvts;
     static constexpr int NUM_BANDS = 8;
-    void parameterChanged(const juce::String& parameterID, float newValu);
-    std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> QuasarEQAudioProcessor::getSharedCoefficients() const;
+    void parameterChanged(const juce::String& parameterID, float newValue);
+    std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> getSharedCoefficients() const;
 private:
     //--------------------------------------------------------------------------------
     void updateFilters();
     std::atomic<bool> parametersChanged {true};
     std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> sharedCoefficients;
-    enum FilterType;
+    enum FilterType { HighPass, HighShelf, LowPass, LowShelf, PeakFilter };
     using Gain = juce::dsp::Gain<float>;
     juce::dsp::ProcessorChain<Gain> outputGain;
     template <typename T, size_t N, typename... Args> struct RepeatTypeHelper: RepeatTypeHelper<T, N - 1, T, Args...> {};
