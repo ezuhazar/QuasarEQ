@@ -221,15 +221,14 @@ void VisualizerComponent::handleAsyncUpdate()
             newPathAvailable = true;
         }
     }
-    if (!newPathAvailable)
+    if (newPathAvailable)
     {
-        return;
+        {
+            juce::ScopedLock lock(pathLock);
+            channelPathToDraw = path;
+        }
+        repaint();
     }
-    {
-        juce::ScopedLock lock(pathLock);
-        channelPathToDraw = path;
-    }
-    repaint();
 }
 void VisualizerComponent::resized()
 {
