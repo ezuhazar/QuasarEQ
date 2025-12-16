@@ -8,31 +8,12 @@ VisualizerComponent::VisualizerComponent(QuasarEQAudioProcessor& p):
     analyzerThread(pathProducer, *this)
 {
     freqLUT = pathProducer.makeFreqLUT(audioProcessor.getSampleRate(), MIN_HZ, MAX_HZ);
-    auto& apvts = audioProcessor.apvts;
-    for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
-    {
-        juce::String index = juce::String(i + 1);
-        apvts.addParameterListener("Freq" + index, this);
-        apvts.addParameterListener("Gain" + index, this);
-        apvts.addParameterListener("Q" + index, this);
-        apvts.addParameterListener("Type" + index, this);
-    }
 }
 VisualizerComponent::~VisualizerComponent()
 {
-    auto& apvts = audioProcessor.apvts;
-    for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
-    {
-        juce::String index = juce::String(i + 1);
-        apvts.removeParameterListener("Freq" + index, this);
-        apvts.removeParameterListener("Gain" + index, this);
-        apvts.removeParameterListener("Q" + index, this);
-        apvts.removeParameterListener("Type" + index, this);
-    }
 }
 void VisualizerComponent::parameterChanged(const juce::String& parameterID, float newValue)
 {
-    parametersNeedUpdate = true;
 }
 
 juce::Rectangle<int> VisualizerComponent::getCurveArea()
@@ -84,14 +65,6 @@ void VisualizerComponent::paint(juce::Graphics& g)
         g.setColour(quasar::colours::audioSignal);
         g.strokePath(curvePathPeak, juce::PathStrokeType(1.3f));
     }
-
-    /*
-     if (parametersNeedUpdate)
-    {
-        calculateResponseCurve();
-    }
-    */
-   
     g.setColour(quasar::colours::enabled);
     g.strokePath(responseCurvePath, juce::PathStrokeType(2.5f));
     g.setFillType(juce::FillType(quasar::colours::audioSignal.withAlpha(0.25f)));
@@ -178,7 +151,6 @@ void VisualizerComponent::calculateResponseCurve()
         responseCurvePath.lineTo(x, y);
     }
     responseCurvePath.lineTo(getLocalBounds().toFloat().getRight(), getLocalBounds().toFloat().getCentreY());
-    parametersNeedUpdate = false;
 }
 
 juce::Path VisualizerComponent::createBezierPath(const std::vector<juce::Point<float>>& points)
