@@ -206,7 +206,7 @@ void QuasarEQAudioProcessor::updateFilters()
         const float gainDB = apvts.getRawParameterValue("Gain" + index)->load();
         const float gainLinear = juce::Decibels::decibelsToGain(gainDB);
         const float q = apvts.getRawParameterValue("Q" + index)->load();
-        const int typeIndex = static_cast<int>(apvts.getRawParameterValue("Type" + index)->load());
+        const auto typeIndex = static_cast<FilterType>(static_cast<int>(apvts.getRawParameterValue("Type" + index)->load()));
         switch (typeIndex)
         {
         case HighPass:
