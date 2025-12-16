@@ -7,14 +7,12 @@ QuasarEQAudioProcessorEditor::QuasarEQAudioProcessorEditor(QuasarEQAudioProcesso
     visualizerComponent(p),
     pluginInfoComponent()
 {
-
+    audioProcessor.addChangeListener(this);
     for (int i = 0; i < 8; ++i)
     {
         bandControls.push_back(std::make_unique<FilterBandControl>(audioProcessor.apvts, i));
         addAndMakeVisible(*bandControls.back());
     }
-
-    audioProcessor.addChangeListener(this);
     addAndMakeVisible(visualizerComponent);
     addAndMakeVisible(pluginInfoComponent);
     addAndMakeVisible(gainSlider);
@@ -22,6 +20,10 @@ QuasarEQAudioProcessorEditor::QuasarEQAudioProcessorEditor(QuasarEQAudioProcesso
     outGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "outGain", gainSlider);
     bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "bypass", bypathButton);
     setSize(804, 650);
+}
+QuasarEQAudioProcessorEditor::~QuasarEQAudioProcessorEditor()
+{
+    audioProcessor.removeChangeListener(this);
 }
 void QuasarEQAudioProcessorEditor::paint(juce::Graphics& g)
 {
@@ -57,6 +59,6 @@ void QuasarEQAudioProcessorEditor::changeListenerCallback(juce::ChangeBroadcaste
 {
     if (source == &audioProcessor)
     {
-        visualizerComponent.aaa = true;
+        visualizerComponent.parametersNeedUpdate = true;
     }
 }

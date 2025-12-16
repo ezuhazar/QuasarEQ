@@ -4,16 +4,15 @@
 #include "PluginProcessor.h" 
 #include "PathProducer.h" 
 
-class VisualizerComponent: public juce::Component, private juce::AsyncUpdater, public juce::AudioProcessorValueTreeState::Listener
+class VisualizerComponent: public juce::Component, private juce::AsyncUpdater
 {
 public:
 	VisualizerComponent(QuasarEQAudioProcessor&);
 	void paint(juce::Graphics& g) override;
-	bool aaa = true;
+	bool parametersNeedUpdate = true;
 private:
 	void handleAsyncUpdate() override;
 	void resized() override;
-	void parameterChanged(const juce::String& parameterID, float newValue) override;
 	juce::Rectangle<int> getLevelMeterArea();
 	juce::Rectangle<int> getCurveArea();
 	juce::Path createBezierPath(const std::vector<juce::Point<float>>& points);
@@ -68,5 +67,4 @@ private:
 
 	void calculateResponseCurve();
 	std::vector<float> responseCurveMagnitude;
-	bool parametersNeedUpdate = true;
 };

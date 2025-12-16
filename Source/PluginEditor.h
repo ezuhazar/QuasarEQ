@@ -12,6 +12,7 @@ class QuasarEQAudioProcessorEditor: public juce::AudioProcessorEditor, public ju
 {
 public:
     QuasarEQAudioProcessorEditor(QuasarEQAudioProcessor&);
+    ~QuasarEQAudioProcessorEditor();
     void paint(juce::Graphics&) override;
     void resized() override;
     //-----------------------------------------------------
