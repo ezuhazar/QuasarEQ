@@ -132,30 +132,29 @@ void QuasarEQAudioProcessor::updateFilters()
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         const juce::String index = juce::String(i + 1);
-        const float gainDB = apvts.getRawParameterValue("Gain" + index)->load();
         const float freq = apvts.getRawParameterValue("Freq" + index)->load();
         const float q = apvts.getRawParameterValue("Q" + index)->load();
-        const auto typeIndex = static_cast<FilterType>(static_cast<int>(apvts.getRawParameterValue("Type" + index)->load()));
-        const float gainLinear = juce::Decibels::decibelsToGain(gainDB);
+        const float gain = juce::Decibels::decibelsToGain(apvts.getRawParameterValue("Gain" + index)->load());
+        const FilterType typeIndex = static_cast<FilterType>((int)apvts.getRawParameterValue("Type" + index)->load());
         switch (typeIndex)
         {
         case HighPass:
             coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, freq, q);
             break;
         case HighShelf:
-            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, freq, q, gainLinear);
+            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, freq, q, gain);
             break;
         case LowPass:
             coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, freq, q);
             break;
         case LowShelf:
-            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, freq, q, gainLinear);
+            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, freq, q, gain);
             break;
         case PeakFilter:
-            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, q, gainLinear);
+            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, q, gain);
             break;
         default:
-            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, q, gainLinear);
+            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, q, gain);
             break;
         }
     }
