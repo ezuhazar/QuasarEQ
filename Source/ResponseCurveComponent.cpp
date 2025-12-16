@@ -9,9 +9,6 @@ VisualizerComponent::VisualizerComponent(QuasarEQAudioProcessor& p):
 {
     freqLUT = pathProducer.makeFreqLUT(audioProcessor.getSampleRate(), MIN_HZ, MAX_HZ);
 }
-VisualizerComponent::~VisualizerComponent()
-{
-}
 void VisualizerComponent::parameterChanged(const juce::String& parameterID, float newValue)
 {
 }
