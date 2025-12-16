@@ -32,17 +32,18 @@ public:
     SingleChannelSampleFifo rightChannelFifo {Channel::Right};
     juce::AudioProcessorValueTreeState apvts;
     static constexpr int NUM_BANDS = 8;
-    std::atomic<bool> parametersChanged {true};
-    void updateFilters();
     void parameterChanged(const juce::String& parameterID, float newValu);
     std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> QuasarEQAudioProcessor::getSharedCoefficients() const;
+private:
+    //--------------------------------------------------------------------------------
+    void updateFilters();
+    std::atomic<bool> parametersChanged {true};
+    std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> sharedCoefficients;
+    enum FilterType;
     using FilterBand = juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>;
     using Gain = juce::dsp::Gain<float>;
     juce::dsp::ProcessorChain<FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, FilterBand, Gain> filterChain;
-private:
-    //--------------------------------------------------------------------------------
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::CriticalSection coefficientsLock;
-    std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> sharedCoefficients;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(QuasarEQAudioProcessor);
 };
