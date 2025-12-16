@@ -36,7 +36,6 @@ void QuasarEQAudioProcessorEditor::resized()
     const int midSectionHeight = 290;
     const int analyzerSectionWidth = 640;
     const int levelMeterSectionWidth = 48;
-
     const int knobsSectionHeight = 320;
     bypathButton.setBounds(juce::Rectangle<int>(margin, margin, topSectionHeight, topSectionHeight).reduced(4));
     pluginInfoComponent.setBounds(juce::Rectangle<int>(topSectionHeight + margin * 2, margin, 200, topSectionHeight));
