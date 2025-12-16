@@ -256,6 +256,7 @@ void QuasarEQAudioProcessor::updateFilters()
         filterChain.setBypassed<7>(isBypassed);
         filterChain.setBypassed<8>(isBypassed);
     }
+    sendChangeMessage();
     parametersChanged.store(false);
 }
 void QuasarEQAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
