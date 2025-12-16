@@ -3,9 +3,48 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "ResponseCurveComponent.h"
-#include "PowerButton.h"
-#include "PluginInfoComponent.h"
 #include "FilterBandControl.h"
+#include "QuasarHeader.h"
+
+class PluginInfoComponent: public juce::Component
+{
+public:
+    PluginInfoComponent()
+    {
+        infoText = juce::String(JucePlugin_Name) + " v" + juce::String(JucePlugin_VersionString);
+    };
+    void paint(juce::Graphics& g) override
+    {
+        g.setColour(quasar::colours::staticText);
+        g.setFont(FONT_HEIGHT);
+        g.drawText(infoText, getLocalBounds(), juce::Justification::centredLeft, false);
+    };
+private:
+    static constexpr int FONT_HEIGHT = 20;
+    juce::String infoText;
+};
+
+class PowerButton: public juce::Button
+{
+public:
+    PowerButton(): juce::Button("PowerButton")
+    {
+        setClickingTogglesState(true);
+    };
+    void paintButton(juce::Graphics& g, bool isMouseOverButton, bool isButtonDown) override
+    {
+        g.setColour(getToggleState() ? quasar::colours::enabled : quasar::colours::disabled);
+        g.fillRoundedRectangle(getLocalBounds().toFloat(), 2.5f);
+    };
+    void mouseEnter(const juce::MouseEvent& event) override
+    {
+        setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    };
+    void mouseExit(const juce::MouseEvent& event) override
+    {
+        setMouseCursor(juce::MouseCursor::NormalCursor);
+    };
+};
 
 class CustomGainSlider: public juce::Slider
 {
@@ -17,6 +56,7 @@ public:
     };
     void mouseDoubleClick (const juce::MouseEvent& event) override
     {
+        // Please keep the empty override. I want to disable the double-click parameter reset.
     };
 };
 
