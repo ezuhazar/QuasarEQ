@@ -106,24 +106,25 @@ void QuasarEQAudioProcessor::setStateInformation(const void* data, int sizeInByt
 }
 juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::createParameterLayout()
 {
-    const float min = 20.0f;
-    const float max = 20000.0f;
+    const float minFrequency = 20.0f;
+    const float maxFrequency = 20000.0f;
     const float defaultQValue = 1.0f / juce::MathConstants<float>::sqrt2;
+    const juce::NormalisableRange<float> gainRange (-24.0f, 24.0f, 0.01f);
     juce::NormalisableRange<float> QRange (0.05f, 12.0f, 0.001f);
-    juce::NormalisableRange<float> FreqRange (min, max, 0.1f);
+    juce::NormalisableRange<float> FreqRange (minFrequency, maxFrequency, 0.1f);
     QRange.setSkewForCentre(defaultQValue);
-    FreqRange.setSkewForCentre(std::sqrtf(min * max));
+    FreqRange.setSkewForCentre(std::sqrtf(minFrequency * maxFrequency));
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
-    layout.add(std::make_unique<juce::AudioParameterFloat>("outGain", "Out Gain", juce::NormalisableRange<float>(-24.0f, 24.0f, 0.01f), 0.0f, "dB"));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("outGain", "Out Gain", gainRange, 0.0f, "dB"));
     layout.add(std::make_unique<juce::AudioParameterBool>("bypass", "Bypass", false));
-    const std::array<float, NUM_BANDS> initialFrequencies = {
-        50.0f, 100.0f, 200.0f, 500.0f, 1000.0f, 2000.0f, 5000.0f, 10000.0f
-    };
+    const float frequencyRatio = std::pow(maxFrequency / minFrequency, 1.0 / static_cast<double>(NUM_BANDS + 1));
+    float currentFrequency = minFrequency;
     for (int i = 0; i < NUM_BANDS; ++i)
     {
+        currentFrequency *= frequencyRatio;
         const juce::String index = juce::String(i + 1);
-        layout.add(std::make_unique<juce::AudioParameterFloat>("Freq" + index, "Band " + index + " Freq", FreqRange, initialFrequencies[i], "Hz"));
-        layout.add(std::make_unique<juce::AudioParameterFloat>("Gain" + index, "Band " + index + " Gain", juce::NormalisableRange<float>(-24.0f, 24.0f, 0.01f), 0.0f, "dB"));
+        layout.add(std::make_unique<juce::AudioParameterFloat>("Freq" + index, "Band " + index + " Freq", FreqRange, currentFrequency, "Hz"));
+        layout.add(std::make_unique<juce::AudioParameterFloat>("Gain" + index, "Band " + index + " Gain", gainRange, 0.0f, "dB"));
         layout.add(std::make_unique<juce::AudioParameterFloat>("Q" + index, "Band " + index + " Q", QRange, defaultQValue));
         layout.add(std::make_unique<juce::AudioParameterChoice>("Type" + index, "Band " + index + " Type", juce::StringArray {"HighPass", "HighShelf", "LowPass", "LowShelf", "PeakFilter"}, PeakFilter));
     }
