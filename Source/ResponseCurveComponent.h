@@ -10,7 +10,7 @@ public:
 	VisualizerComponent(QuasarEQAudioProcessor&);
 	~VisualizerComponent() override;
 	void paint(juce::Graphics& g) override;
-	bool aaa;
+	bool aaa = true;
 private:
 	void handleAsyncUpdate() override;
 	void resized() override;
