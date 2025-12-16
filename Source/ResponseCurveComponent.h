@@ -8,7 +8,6 @@ class VisualizerComponent: public juce::Component, private juce::AsyncUpdater, p
 {
 public:
 	VisualizerComponent(QuasarEQAudioProcessor&);
-	~VisualizerComponent() override;
 	void paint(juce::Graphics& g) override;
 	bool aaa = true;
 private:
