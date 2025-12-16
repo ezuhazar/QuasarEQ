@@ -6,6 +6,14 @@
               companyName="Ezuhazar">
   <MAINGROUP id="KVWAhs" name="QuasarEQ">
     <GROUP id="{A7B39CBD-CB16-DFB9-4453-FDEE49943E45}" name="Source">
+      <FILE id="YEzjqg" name="PluginInfoComponent.cpp" compile="1" resource="0"
+            file="Source/PluginInfoComponent.cpp"/>
+      <FILE id="QAlkxj" name="PluginInfoComponent.h" compile="0" resource="0"
+            file="Source/PluginInfoComponent.h"/>
+      <FILE id="pX5RqK" name="ResponseCurveComponent.cpp" compile="1" resource="0"
+            file="Source/ResponseCurveComponent.cpp"/>
+      <FILE id="uzHQBj" name="ResponseCurveComponent.h" compile="0" resource="0"
+            file="Source/ResponseCurveComponent.h"/>
       <FILE id="ruCQC4" name="MyGainSlider.cpp" compile="1" resource="0"
             file="Source/MyGainSlider.cpp"/>
       <FILE id="GTD63v" name="MyGainSlider.h" compile="0" resource="0" file="Source/MyGainSlider.h"/>
@@ -14,16 +22,6 @@
             file="Source/FilterBandControl.cpp"/>
       <FILE id="XTBiDs" name="FilterBandControl.h" compile="0" resource="0"
             file="Source/FilterBandControl.h"/>
-      <GROUP id="{C1F0525C-9DC0-0720-7E21-4FE9A4FFB73B}" name="Components">
-        <FILE id="YEzjqg" name="PluginInfoComponent.cpp" compile="1" resource="0"
-              file="Source/PluginInfoComponent.cpp"/>
-        <FILE id="QAlkxj" name="PluginInfoComponent.h" compile="0" resource="0"
-              file="Source/PluginInfoComponent.h"/>
-        <FILE id="pX5RqK" name="ResponseCurveComponent.cpp" compile="1" resource="0"
-              file="Source/ResponseCurveComponent.cpp"/>
-        <FILE id="uzHQBj" name="ResponseCurveComponent.h" compile="0" resource="0"
-              file="Source/ResponseCurveComponent.h"/>
-      </GROUP>
       <FILE id="pMbb5P" name="PowerButton.cpp" compile="1" resource="0" file="Source/PowerButton.cpp"/>
       <FILE id="fb9jIe" name="PowerButton.h" compile="0" resource="0" file="Source/PowerButton.h"/>
       <FILE id="M2QH5Z" name="PathProducer.cpp" compile="1" resource="0"
