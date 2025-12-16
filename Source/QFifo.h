@@ -113,6 +113,6 @@ struct SingleChannelSampleFifo
 private:
     Channel channelToUse;
     int fifoIndex = 0;
-    AudioBufferFifo<32> audioBufferFifo;
+    AudioBufferFifo<16> audioBufferFifo;
     juce::AudioBuffer<float> bufferToFill;
 };
