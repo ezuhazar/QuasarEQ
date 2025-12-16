@@ -32,21 +32,29 @@ public:
     juce::AudioProcessorValueTreeState apvts;
     static constexpr int NUM_BANDS = 8;
     void parameterChanged(const juce::String& parameterID, float newValue);
-    std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> getSharedCoefficients() const;
+    using Coef = juce::dsp::IIR::Coefficients<float>;
+    using CoefPtrArray = std::array<Coef::Ptr, NUM_BANDS>;
+    CoefPtrArray getSharedCoefficients() const;
 private:
-    void updateFilters();
+    static constexpr float MIN_FREQ = 20.0f;
+    static constexpr float MAX_FREQ = 20000.0f;
+    static constexpr float MIN_GAIN = -24.0f;
+    static constexpr float MAX_GAIN = 24.0f;
+    static constexpr float MIN_Q = 0.05f;
+    static constexpr float MAX_Q = 12.0f;
+    CoefPtrArray newCoefs;
+    CoefPtrArray sharedCoefficients;
     std::atomic<bool> parametersChanged {true};
-    std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> sharedCoefficients;
+    void updateFilters();
     enum FilterType { HighPass, HighShelf, LowPass, LowShelf, PeakFilter };
-    using Gain = juce::dsp::Gain<float>;
-    juce::dsp::ProcessorChain<Gain> outputGain;
+    juce::dsp::ProcessorChain<juce::dsp::Gain<float>> outputGain;
     template <typename T, size_t N, typename... Args> struct RepeatTypeHelper: RepeatTypeHelper<T, N - 1, T, Args...> {};
     template <typename T, typename... Args> struct RepeatTypeHelper<T, 0, Args...> { using Type = juce::dsp::ProcessorChain<Args...>; };
-    typename RepeatTypeHelper<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>, NUM_BANDS>::Type filterChain;
+    typename RepeatTypeHelper<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, Coef>, NUM_BANDS>::Type filterChain;
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::CriticalSection coefficientsLock;
     template <size_t... I>
-    void updateFilterChainCoefficients(const std::array<juce::dsp::IIR::Coefficients<float>::Ptr, QuasarEQAudioProcessor::NUM_BANDS>& newCoefs, bool isBypassed, std::index_sequence<I...>)
+    void updateFilterChainCoefficients(const CoefPtrArray& newCoefs, bool isBypassed, std::index_sequence<I...>)
     {
         ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(isBypassed)), ...);
     }

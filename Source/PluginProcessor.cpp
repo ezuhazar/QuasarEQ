@@ -106,42 +106,42 @@ void QuasarEQAudioProcessor::setStateInformation(const void* data, int sizeInByt
 }
 juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::createParameterLayout()
 {
-    const float minFrequency = 20.0f;
-    const float maxFrequency = 20000.0f;
-    const float defaultQValue = 1.0f / juce::MathConstants<float>::sqrt2;
-    const juce::NormalisableRange<float> gainRange (-24.0f, 24.0f, 0.01f);
-    juce::NormalisableRange<float> QRange (0.05f, 12.0f, 0.001f);
-    juce::NormalisableRange<float> FreqRange (minFrequency, maxFrequency, 0.1f);
-    QRange.setSkewForCentre(defaultQValue);
-    FreqRange.setSkewForCentre(std::sqrtf(minFrequency * maxFrequency));
+    const float frequencyRatio = std::pow(MAX_FREQ / MIN_FREQ, 1.0 / static_cast<double>(NUM_BANDS + 1));
+    const float CentreGain = 0.0f;
+    const float CentreFreq = std::sqrtf(MIN_FREQ * MAX_FREQ);
+    const float CentreQ = 1.0f / juce::MathConstants<float>::sqrt2;
+    const int defaultFilter = PeakFilter;
+    juce::NormalisableRange<float> gainRange (MIN_GAIN, MAX_GAIN, 0.01f);
+    juce::NormalisableRange<float> FreqRange (MIN_FREQ, MAX_FREQ, 0.1f);
+    juce::NormalisableRange<float> QRange (MIN_Q, MAX_Q, 0.001f);
+    FreqRange.setSkewForCentre(CentreFreq);
+    QRange.setSkewForCentre(CentreQ);
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
-    layout.add(std::make_unique<juce::AudioParameterFloat>("outGain", "Out Gain", gainRange, 0.0f, "dB"));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("outGain", "Out Gain", gainRange, CentreGain, "dB"));
     layout.add(std::make_unique<juce::AudioParameterBool>("bypass", "Bypass", false));
-    const float frequencyRatio = std::pow(maxFrequency / minFrequency, 1.0 / static_cast<double>(NUM_BANDS + 1));
-    float currentFrequency = minFrequency;
+    float currentFrequency = MIN_FREQ;
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         currentFrequency *= frequencyRatio;
         const juce::String index = juce::String(i + 1);
         layout.add(std::make_unique<juce::AudioParameterFloat>("Freq" + index, "Band " + index + " Freq", FreqRange, currentFrequency, "Hz"));
-        layout.add(std::make_unique<juce::AudioParameterFloat>("Gain" + index, "Band " + index + " Gain", gainRange, 0.0f, "dB"));
-        layout.add(std::make_unique<juce::AudioParameterFloat>("Q" + index, "Band " + index + " Q", QRange, defaultQValue));
-        layout.add(std::make_unique<juce::AudioParameterChoice>("Type" + index, "Band " + index + " Type", juce::StringArray {"HighPass", "HighShelf", "LowPass", "LowShelf", "PeakFilter"}, PeakFilter));
+        layout.add(std::make_unique<juce::AudioParameterFloat>("Gain" + index, "Band " + index + " Gain", gainRange, CentreGain, "dB"));
+        layout.add(std::make_unique<juce::AudioParameterFloat>("Q" + index, "Band " + index + " Q", QRange, CentreQ));
+        layout.add(std::make_unique<juce::AudioParameterChoice>("Type" + index, "Band " + index + " Type", juce::StringArray {"HighPass", "HighShelf", "LowPass", "LowShelf", "PeakFilter"}, defaultFilter));
     }
     return layout;
 }
 void QuasarEQAudioProcessor::updateFilters()
 {
     const double sampleRate = getSampleRate();
-    std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS> newCoefs;
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         const juce::String index = juce::String(i + 1);
-        const float freq = apvts.getRawParameterValue("Freq" + index)->load();
         const float gainDB = apvts.getRawParameterValue("Gain" + index)->load();
-        const float gainLinear = juce::Decibels::decibelsToGain(gainDB);
+        const float freq = apvts.getRawParameterValue("Freq" + index)->load();
         const float q = apvts.getRawParameterValue("Q" + index)->load();
         const auto typeIndex = static_cast<FilterType>(static_cast<int>(apvts.getRawParameterValue("Type" + index)->load()));
+        const float gainLinear = juce::Decibels::decibelsToGain(gainDB);
         switch (typeIndex)
         {
         case HighPass:
@@ -167,15 +167,12 @@ void QuasarEQAudioProcessor::updateFilters()
     const bool isBypassed = apvts.getRawParameterValue("bypass")->load();
     const float currentGainDB = apvts.getRawParameterValue("outGain")->load();
     const float gainLinear = juce::Decibels::decibelsToGain(currentGainDB);
-    updateFilterChainCoefficients(newCoefs, isBypassed, std::make_index_sequence<NUM_BANDS>{});
     outputGain.setBypassed<0>(isBypassed);
     outputGain.get<0>().setGainLinear(gainLinear);
+    updateFilterChainCoefficients(newCoefs, isBypassed, std::make_index_sequence<NUM_BANDS>{});
     {
         juce::ScopedLock lock (coefficientsLock);
-        for (int i = 0; i < NUM_BANDS; ++i)
-        {
-            sharedCoefficients[i] = newCoefs[i];
-        }
+        sharedCoefficients = newCoefs;
     }
     sendChangeMessage();
     parametersChanged.store(false);
