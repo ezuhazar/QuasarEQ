@@ -1,6 +1,5 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-
 QuasarEQAudioProcessor::QuasarEQAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
     : AudioProcessor(BusesProperties()
@@ -26,45 +25,37 @@ QuasarEQAudioProcessor::QuasarEQAudioProcessor()
         }
     }
 }
-const juce::String QuasarEQAudioProcessor::getName() const
+#ifndef JucePlugin_PreferredChannelConfigurations
+bool QuasarEQAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
-    return JucePlugin_Name;
+#if JucePlugin_IsMidiEffect
+    juce::ignoreUnused(layouts);
+    return true;
+#else
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()  && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+        return false;
+#if ! JucePlugin_IsSynth
+    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
+        return false;
+#endif
+    return true;
+#endif
 }
-bool QuasarEQAudioProcessor::acceptsMidi() const
-{
-    return JucePlugin_WantsMidiInput;
-}
-bool QuasarEQAudioProcessor::producesMidi() const
-{
-    return JucePlugin_ProducesMidiOutput;
-}
-bool QuasarEQAudioProcessor::isMidiEffect() const
-{
-    return JucePlugin_IsMidiEffect;
-}
-double QuasarEQAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-// NB: some hosts don't cope very well if you tell them there are 0 programs, so this should be at least 1, even if you're not really implementing programs.
-int QuasarEQAudioProcessor::getNumPrograms()
-{
-    return 1;
-}
-int QuasarEQAudioProcessor::getCurrentProgram()
-{
-    return 0;
-}
-void QuasarEQAudioProcessor::setCurrentProgram(int index)
-{
-}
-const juce::String QuasarEQAudioProcessor::getProgramName(int index)
-{
-    return {};
-}
-void QuasarEQAudioProcessor::changeProgramName(int index, const juce::String& newName)
-{
-}
+#endif
+int QuasarEQAudioProcessor::getNumPrograms() { return 1; }
+int QuasarEQAudioProcessor::getCurrentProgram() { return 0; }
+bool QuasarEQAudioProcessor::hasEditor() const { return true; }
+bool QuasarEQAudioProcessor::acceptsMidi() const { return JucePlugin_WantsMidiInput; }
+bool QuasarEQAudioProcessor::isMidiEffect() const { return JucePlugin_IsMidiEffect; }
+bool QuasarEQAudioProcessor::producesMidi() const { return JucePlugin_ProducesMidiOutput; }
+void QuasarEQAudioProcessor::changeProgramName(int index, const juce::String& newName) {}
+void QuasarEQAudioProcessor::releaseResources() {}
+void QuasarEQAudioProcessor::setCurrentProgram(int index) {}
+double QuasarEQAudioProcessor::getTailLengthSeconds() const { return 0.0; }
+const juce::String QuasarEQAudioProcessor::getName() const { return JucePlugin_Name; }
+const juce::String QuasarEQAudioProcessor::getProgramName(int index) { return {}; }
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new QuasarEQAudioProcessor(); }
+juce::AudioProcessorEditor* QuasarEQAudioProcessor::createEditor() { return new QuasarEQAudioProcessorEditor(*this); }
 void QuasarEQAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     juce::dsp::ProcessSpec spec {};
@@ -79,36 +70,6 @@ void QuasarEQAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
     outputGain.reset();
     updateFilters();
 }
-void QuasarEQAudioProcessor::releaseResources()
-{
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
-}
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool QuasarEQAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
-{
-#if JucePlugin_IsMidiEffect
-    juce::ignoreUnused(layouts);
-    return true;
-#else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-        return false;
-
-    // This checks if the input layout matches the output layout
-#if ! JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-        return false;
-#endif
-
-    return true;
-#endif
-}
-#endif
 void QuasarEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
@@ -129,23 +90,11 @@ void QuasarEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     leftChannelFifo.update(buffer);
     rightChannelFifo.update(buffer);
 }
-// (change this to false if you choose to not supply an editor)
-bool QuasarEQAudioProcessor::hasEditor() const
-{
-    return true;
-}
-juce::AudioProcessorEditor* QuasarEQAudioProcessor::createEditor()
-{
-    return new QuasarEQAudioProcessorEditor(*this);
-}
-// You should use this method to store your parameters in the memory block.
-// You could do that either as raw data, or use the XML or ValueTree classes as intermediaries to make it easy to save and load complex data.
 void QuasarEQAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     juce::MemoryOutputStream stream(destData, false);
     apvts.state.writeToStream(stream);
 }
-// You should use this method to restore your parameters from this memory block, whose contents will have been created by the getStateInformation() call.
 void QuasarEQAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     auto tree = juce::ValueTree::readFromData(data, size_t(sizeInBytes));
@@ -154,20 +103,8 @@ void QuasarEQAudioProcessor::setStateInformation(const void* data, int sizeInByt
         apvts.replaceState(tree);
     }
 }
-// This creates new instances of the plugin.
-juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
-{
-    return new QuasarEQAudioProcessor();
-}
-//------------------------------------------------------------------------------------------
-enum QuasarEQAudioProcessor::FilterType
-{
-    HighPass, HighShelf, LowPass, LowShelf, PeakFilter
-};
-void QuasarEQAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
-{
-    parametersChanged.store(true);
-}
+enum QuasarEQAudioProcessor::FilterType { HighPass, HighShelf, LowPass, LowShelf, PeakFilter };
+void QuasarEQAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue) { parametersChanged.store(true); }
 juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::createParameterLayout()
 {
     const float min = 20.0f;
