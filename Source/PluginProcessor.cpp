@@ -130,23 +130,23 @@ void QuasarEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     leftChannelFifo.update(buffer);
     rightChannelFifo.update(buffer);
 }
+// (change this to false if you choose to not supply an editor)
 bool QuasarEQAudioProcessor::hasEditor() const
 {
-    // (change this to false if you choose to not supply an editor)
     return true;
 }
 juce::AudioProcessorEditor* QuasarEQAudioProcessor::createEditor()
 {
     return new QuasarEQAudioProcessorEditor(*this);
 }
+// You should use this method to store your parameters in the memory block.
+// You could do that either as raw data, or use the XML or ValueTree classes as intermediaries to make it easy to save and load complex data.
 void QuasarEQAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     juce::MemoryOutputStream stream(destData, false);
     apvts.state.writeToStream(stream);
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
 }
+// You should use this method to restore your parameters from this memory block, whose contents will have been created by the getStateInformation() call.
 void QuasarEQAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     auto tree = juce::ValueTree::readFromData(data, size_t(sizeInBytes));
@@ -154,17 +154,13 @@ void QuasarEQAudioProcessor::setStateInformation(const void* data, int sizeInByt
     {
         apvts.replaceState(tree);
     }
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
 }
-// This creates new instances of the plugin..
+// This creates new instances of the plugin.
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new QuasarEQAudioProcessor();
 }
-
 //------------------------------------------------------------------------------------------
-
 juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::createParameterLayout()
 {
     const float min = 20.0f;
