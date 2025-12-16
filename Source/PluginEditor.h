@@ -23,7 +23,6 @@ private:
     static constexpr int FONT_HEIGHT = 20;
     juce::String infoText;
 };
-
 class PowerButton: public juce::Button
 {
 public:
@@ -45,7 +44,6 @@ public:
         setMouseCursor(juce::MouseCursor::NormalCursor);
     };
 };
-
 class CustomGainSlider: public juce::Slider
 {
 public:
@@ -59,7 +57,6 @@ public:
         // Please keep the empty override. I want to disable the double-click parameter reset.
     };
 };
-
 class QuasarEQAudioProcessorEditor: public juce::AudioProcessorEditor, public juce::ChangeListener
 {
 public:

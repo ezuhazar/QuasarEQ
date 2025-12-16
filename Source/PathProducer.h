@@ -1,8 +1,5 @@
 #pragma once
 #include <JuceHeader.h>
-#include <algorithm>
-#include <vector>
-#include <iterator>
 #include "PluginProcessor.h"
 
 struct SpectrumRenderData
@@ -21,7 +18,6 @@ public:
 	bool getPath(SpectrumRenderData& path);
 	std::vector<float> makeFreqLUT(const double sampleRate, const float minHz, const float maxHz) const;
 private:
-	// DO NOT CHANGE THESE VALUES UNLESS YOU KNOW EXACTLY WHAT THEY DO
 	static constexpr int FFT_ORDER = 12;
 	static constexpr int NUM_SECTIONS = 1 << 3;
 	static constexpr int SECTION_SIZE = 1 << 8;
@@ -33,7 +29,6 @@ private:
 	static constexpr float SMOOTHING_TIME_CONSTANT = 0.02f;
 	static constexpr float PEAK_DECAY_RATE = 80.0f;
 	static constexpr float LEVEL_METER_SMOOTHING_TIME_CONSTANT = SMOOTHING_TIME_CONSTANT * 5.0f;
-	//----------------------------------------------------------------
 	SingleChannelSampleFifo* leftChannelFifo;
 	SingleChannelSampleFifo* rightChannelFifo;
 	juce::AudioBuffer<float> monoBufferL;
