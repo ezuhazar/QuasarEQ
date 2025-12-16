@@ -17,6 +17,7 @@ private:
 	juce::Rectangle<int> getLevelMeterArea();
 	juce::Rectangle<int> getCurveArea();
 	juce::Path createBezierPath(const std::vector<juce::Point<float>>& points);
+	bool aaa;
 	static constexpr float MIN_HZ = 20.0f;
 	static constexpr float MAX_HZ = 20000.0f;
 	static constexpr float MIN_DBFS = -90.0f;
