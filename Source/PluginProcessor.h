@@ -44,6 +44,11 @@ private:
     static constexpr float GAIN_INTERVAL = 0.01f;
     static constexpr float FREQ_INTERVAL = 0.1f;
     static constexpr float Q_INTERVAL = 0.001f;
+    const float FREQ_RATIO = std::pow(MAX_FREQ / MIN_FREQ, 1.0 / static_cast<double>(NUM_BANDS + 1));
+    const float CENTRE_GAIN = 0.0f;
+    const float CENTRE_FREQ = std::sqrtf(MIN_FREQ * MAX_FREQ);
+    const float CENTRE_Q = 1.0f / juce::MathConstants<float>::sqrt2;
+    const int DEFAULT_FILTER = PeakFilter;
     CoefPtrArray coefsBuffer;
     CoefPtrArray sharedCoefficients;
     std::atomic<bool> parametersChanged {true};
@@ -53,7 +58,7 @@ private:
     template <typename T, size_t N, typename... Args> struct RepeatTypeHelper: RepeatTypeHelper<T, N - 1, T, Args...> {};
     template <typename T, typename... Args> struct RepeatTypeHelper<T, 0, Args...> { using Type = juce::dsp::ProcessorChain<Args...>; };
     typename RepeatTypeHelper<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>, NUM_BANDS>::Type filterChain;
-    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout() const;
     juce::CriticalSection coefficientsLock;
     template <size_t... I>
     void updateFilterChainCoefficients(const CoefPtrArray& newCoefs, bool isBypassed, std::index_sequence<I...>)
