@@ -2,6 +2,15 @@
 #include "PluginEditor.h"
 #include "QuasarHeader.h"
 
+enum FilterType
+{
+    HighPass,
+    HighShelf,
+    LowPass,
+    LowShelf,
+    PeakFilter
+};
+
 QuasarEQAudioProcessor::QuasarEQAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
     : AudioProcessor(BusesProperties()

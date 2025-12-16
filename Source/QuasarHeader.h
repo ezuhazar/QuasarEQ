@@ -3,15 +3,6 @@
 #include <cstdint>
 #include <JuceHeader.h>
 
-enum FilterType
-{
-	HighPass,
-	HighShelf,
-	LowPass,
-	LowShelf,
-	PeakFilter
-};
-
 namespace quasar
 {
 	namespace colours
