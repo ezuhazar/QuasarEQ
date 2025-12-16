@@ -85,11 +85,13 @@ void VisualizerComponent::paint(juce::Graphics& g)
         g.strokePath(curvePathPeak, juce::PathStrokeType(1.3f));
     }
 
-
-    if (parametersNeedUpdate)
+    /*
+     if (parametersNeedUpdate)
     {
         calculateResponseCurve();
     }
+    */
+   
     g.setColour(quasar::colours::enabled);
     g.strokePath(responseCurvePath, juce::PathStrokeType(2.5f));
     g.setFillType(juce::FillType(quasar::colours::audioSignal.withAlpha(0.25f)));
@@ -220,6 +222,11 @@ void VisualizerComponent::handleAsyncUpdate()
         {
             newPathAvailable = true;
         }
+    }
+    if (aaa)
+    {
+        calculateResponseCurve();
+        aaa = false;
     }
     if (newPathAvailable)
     {
