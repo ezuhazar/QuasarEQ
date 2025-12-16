@@ -23,7 +23,7 @@ QuasarEQAudioProcessor::QuasarEQAudioProcessor()
     apvts.addParameterListener("bypass", this);
     for (int i = 0; i < NUM_BANDS; ++i)
     {
-        juce::String index = juce::String(i + 1);
+        const juce::String index = juce::String(i + 1);
         apvts.addParameterListener("Freq" + index, this);
         apvts.addParameterListener("Gain" + index, this);
         apvts.addParameterListener("Q" + index, this);
@@ -50,9 +50,9 @@ double QuasarEQAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
+// NB: some hosts don't cope very well if you tell them there are 0 programs, so this should be at least 1, even if you're not really implementing programs.
 int QuasarEQAudioProcessor::getNumPrograms()
 {
-    // NB: some hosts don't cope very well if you tell them there are 0 programs, so this should be at least 1, even if you're not really implementing programs.
     return 1;
 }
 int QuasarEQAudioProcessor::getCurrentProgram()
