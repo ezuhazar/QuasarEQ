@@ -7,7 +7,7 @@ VisualizerComponent::VisualizerComponent(QuasarEQAudioProcessor& p):
     pathProducer(audioProcessor.leftChannelFifo, audioProcessor.rightChannelFifo),
     analyzerThread(pathProducer, *this)
 {
-    makeFreqLUT();
+    freqLUT = pathProducer.makeFreqLUT(audioProcessor.getSampleRate(), MIN_HZ, MAX_HZ);
     auto& apvts = audioProcessor.apvts;
     for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
     {
@@ -285,10 +285,6 @@ void VisualizerComponent::resized()
         const int meterLabelY = getLevelMeterArea().getX() - margin - static_cast<int>(std::roundf(meterLabelWidth * 0.5f));
         g.drawText(meterTags[i], meterLabelY, dbLabelY, meterLabelWidth, FONT_HEIGHT, juce::Justification::centred, false);
     }
-}
-void VisualizerComponent::makeFreqLUT()
-{
-    freqLUT = pathProducer.makeFreqLUT(audioProcessor.getSampleRate(), MIN_HZ, MAX_HZ);
 }
 VisualizerComponent::AnalyzerThread::AnalyzerThread(PathProducer& producer, VisualizerComponent& comp): juce::Thread("FFT Analyzer Thread"), producer(producer), responseCurveComponent(comp)
 {
