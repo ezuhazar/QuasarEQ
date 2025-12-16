@@ -19,7 +19,7 @@ QuasarEQAudioProcessorEditor::QuasarEQAudioProcessorEditor(QuasarEQAudioProcesso
     addAndMakeVisible(bypathButton);
     outGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "outGain", gainSlider);
     bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "bypass", bypathButton);
-    setSize(804, 650);
+    setSize(724, 650);
 }
 QuasarEQAudioProcessorEditor::~QuasarEQAudioProcessorEditor()
 {
