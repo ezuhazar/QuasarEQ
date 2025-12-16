@@ -23,6 +23,8 @@ QuasarEQAudioProcessor::QuasarEQAudioProcessor()
 #endif
     , apvts(*this, nullptr, "Parameters", createParameterLayout())
 {
+    apvts.addParameterListener("outGain", this);
+    apvts.addParameterListener("bypass", this);
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         juce::String index = juce::String(i + 1);
@@ -31,8 +33,6 @@ QuasarEQAudioProcessor::QuasarEQAudioProcessor()
         apvts.addParameterListener("Q" + index, this);
         apvts.addParameterListener("Type" + index, this);
     }
-    apvts.addParameterListener("outGain", this);
-    apvts.addParameterListener("bypass", this);
 }
 const juce::String QuasarEQAudioProcessor::getName() const
 {
