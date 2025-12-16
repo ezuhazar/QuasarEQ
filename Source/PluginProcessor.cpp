@@ -4,11 +4,7 @@
 
 enum FilterType
 {
-    HighPass,
-    HighShelf,
-    LowPass,
-    LowShelf,
-    PeakFilter
+    HighPass, HighShelf, LowPass, LowShelf, PeakFilter
 };
 QuasarEQAudioProcessor::QuasarEQAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
