@@ -57,6 +57,5 @@ void QuasarEQAudioProcessorEditor::changeListenerCallback(juce::ChangeBroadcaste
 {
     if (source == &audioProcessor)
     {
-        visualizerComponent.aaa = true;
     }
 }
