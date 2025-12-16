@@ -47,4 +47,12 @@ private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::CriticalSection coefficientsLock;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(QuasarEQAudioProcessor);
+    template <size_t... I>
+    void updateFilterChainCoefficients(
+        const std::array<juce::dsp::IIR::Coefficients<float>::Ptr, QuasarEQAudioProcessor::NUM_BANDS>& newCoefs,
+        bool isBypassed,
+        std::index_sequence<I...>)
+    {
+        ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(isBypassed)), ...);
+    }
 };
