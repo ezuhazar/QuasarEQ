@@ -15,7 +15,6 @@ PathProducer::PathProducer(SingleChannelSampleFifo& leftScsf, SingleChannelSampl
 void PathProducer::process(double sampleRate)
 {
     juce::AudioBuffer<float> leftIncomingBuffer, rightIncomingBuffer;
-
     bool aaa = false;
     while (leftChannelFifo->getNumCompleteBuffersAvailable() > 0 && rightChannelFifo->getNumCompleteBuffersAvailable() > 0)
     {
@@ -23,10 +22,8 @@ void PathProducer::process(double sampleRate)
         {
             aaa = true;
             const int incomingSize = leftIncomingBuffer.getNumSamples();
-
             currentLeftGain = leftIncomingBuffer.getMagnitude(0, 0, incomingSize);
             currentRightGain = rightIncomingBuffer.getMagnitude(0, 0, incomingSize);
-
             const int copySize = FFT_SIZE - incomingSize;
             monoBufferL.copyFrom(0, 0, monoBufferL.getReadPointer(0, incomingSize), copySize);
             monoBufferR.copyFrom(0, 0, monoBufferR.getReadPointer(0, incomingSize), copySize);
@@ -47,9 +44,7 @@ void PathProducer::process(double sampleRate)
     }
     if (aaa)
     {
-
         pathFifo.push({currentDecibels, peakHoldDecibels, juce::Decibels::gainToDecibels(smoothedLeftGain), juce::Decibels::gainToDecibels(smoothedRightGain)});
-
     }
 }
 std::vector<float> PathProducer::makeFreqLUT(const double sampleRate, const float minHz, const float maxHz) const
