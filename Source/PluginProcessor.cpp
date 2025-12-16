@@ -32,7 +32,7 @@ bool QuasarEQAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) 
     juce::ignoreUnused(layouts);
     return true;
 #else
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()  && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono() && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 #if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
@@ -42,20 +42,20 @@ bool QuasarEQAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) 
 #endif
 }
 #endif
-int QuasarEQAudioProcessor::getNumPrograms()                                           { return 1; }
-int QuasarEQAudioProcessor::getCurrentProgram()                                        { return 0; }
-bool QuasarEQAudioProcessor::hasEditor() const                                         { return true; }
-bool QuasarEQAudioProcessor::acceptsMidi() const                                       { return JucePlugin_WantsMidiInput; }
-bool QuasarEQAudioProcessor::isMidiEffect() const                                      { return JucePlugin_IsMidiEffect; }
-bool QuasarEQAudioProcessor::producesMidi() const                                      { return JucePlugin_ProducesMidiOutput; }
+int QuasarEQAudioProcessor::getNumPrograms() { return 1; }
+int QuasarEQAudioProcessor::getCurrentProgram() { return 0; }
+bool QuasarEQAudioProcessor::hasEditor() const { return true; }
+bool QuasarEQAudioProcessor::acceptsMidi() const { return JucePlugin_WantsMidiInput; }
+bool QuasarEQAudioProcessor::isMidiEffect() const { return JucePlugin_IsMidiEffect; }
+bool QuasarEQAudioProcessor::producesMidi() const { return JucePlugin_ProducesMidiOutput; }
 void QuasarEQAudioProcessor::changeProgramName(int index, const juce::String& newName) {}
-void QuasarEQAudioProcessor::releaseResources()                                        {}
-void QuasarEQAudioProcessor::setCurrentProgram(int index)                              {}
-double QuasarEQAudioProcessor::getTailLengthSeconds() const                            { return 0.0; }
-const juce::String QuasarEQAudioProcessor::getName() const                             { return JucePlugin_Name; }
-const juce::String QuasarEQAudioProcessor::getProgramName(int index)                   { return {}; }
-juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()                               { return new QuasarEQAudioProcessor(); }
-juce::AudioProcessorEditor* QuasarEQAudioProcessor::createEditor()                     { return new QuasarEQAudioProcessorEditor(*this); }
+void QuasarEQAudioProcessor::releaseResources() {}
+void QuasarEQAudioProcessor::setCurrentProgram(int index) {}
+double QuasarEQAudioProcessor::getTailLengthSeconds() const { return 0.0; }
+const juce::String QuasarEQAudioProcessor::getName() const { return JucePlugin_Name; }
+const juce::String QuasarEQAudioProcessor::getProgramName(int index) { return {}; }
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new QuasarEQAudioProcessor(); }
+juce::AudioProcessorEditor* QuasarEQAudioProcessor::createEditor() { return new QuasarEQAudioProcessorEditor(*this); }
 void QuasarEQAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     juce::dsp::ProcessSpec spec {};
