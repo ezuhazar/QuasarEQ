@@ -227,18 +227,18 @@ void QuasarEQAudioProcessor::updateFilters()
             break;
         }
     }
+    const bool isBypassed = apvts.getRawParameterValue("bypass")->load();
+    const float currentGainDB = apvts.getRawParameterValue("outGain")->load();
+    const float gainLinear = juce::Decibels::decibelsToGain(currentGainDB);
+    updateFilterChainCoefficients(newCoefs, isBypassed, std::make_index_sequence<NUM_BANDS>{});
+    outputGain.setBypassed<0>(isBypassed);
+    outputGain.get<0>().setGainLinear(gainLinear);
     {
         juce::ScopedLock lock (coefficientsLock);
         for (int i = 0; i < NUM_BANDS; ++i)
         {
             sharedCoefficients[i] = newCoefs[i];
         }
-        const bool isBypassed = apvts.getRawParameterValue("bypass")->load();
-        updateFilterChainCoefficients(newCoefs, isBypassed, std::make_index_sequence<NUM_BANDS>{});
-        const float currentGainDB = apvts.getRawParameterValue("outGain")->load();
-        const float gainLinear = juce::Decibels::decibelsToGain(currentGainDB);
-        outputGain.get<0>().setGainLinear(gainLinear);
-        outputGain.setBypassed<0>(isBypassed);
     }
     sendChangeMessage();
     parametersChanged.store(false);
