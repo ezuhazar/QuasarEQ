@@ -10,7 +10,6 @@ public:
 	VisualizerComponent(QuasarEQAudioProcessor&);
 	~VisualizerComponent() override;
 	void paint(juce::Graphics& g) override;
-	void makeFreqLUT();
 private:
 	void handleAsyncUpdate() override;
 	void resized() override;
