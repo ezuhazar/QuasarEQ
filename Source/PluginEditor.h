@@ -5,7 +5,6 @@
 #include "ResponseCurveComponent.h"
 #include "PowerButton.h"
 #include "PluginInfoComponent.h"
-#include "MyGainSlider.h"
 #include "FilterBandControl.h"
 
 class CustomGainSlider: public juce::Slider
