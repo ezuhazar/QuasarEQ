@@ -3,6 +3,9 @@
 
 FilterBandControl::FilterBandControl(juce::AudioProcessorValueTreeState& apvts, int bandIndex)
 {
+    freqSlider.setLookAndFeel(&customLNF);
+    gainSlider.setLookAndFeel(&customLNF);
+    qSlider.setLookAndFeel(&customLNF);
     juce::String index = juce::String(bandIndex + 1);
     freqSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     freqSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
@@ -26,6 +29,9 @@ FilterBandControl::FilterBandControl(juce::AudioProcessorValueTreeState& apvts, 
 }
 FilterBandControl::~FilterBandControl()
 {
+    freqSlider.setLookAndFeel(nullptr);
+    gainSlider.setLookAndFeel(nullptr);
+    qSlider.setLookAndFeel(nullptr);
 }
 void FilterBandControl::resized()
 {
