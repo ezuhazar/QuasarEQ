@@ -137,7 +137,7 @@ void QuasarEQAudioProcessor::updateFilters()
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         const juce::String index = juce::String(i + 1);
-        const float freq = juce::jmax(apvts.getRawParameterValue("Freq" + index)->load(), static_cast<float>(sampleRate - 100));
+        const float freq = juce::jmin(apvts.getRawParameterValue("Freq" + index)->load(), static_cast<float>(sampleRate) * 0.49f);
         const float q = apvts.getRawParameterValue("Q" + index)->load();
         const float gain = juce::Decibels::decibelsToGain(apvts.getRawParameterValue("Gain" + index)->load());
         const FilterType typeIndex = static_cast<FilterType>((int)apvts.getRawParameterValue("Type" + index)->load());
