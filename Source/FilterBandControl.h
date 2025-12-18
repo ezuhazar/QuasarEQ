@@ -26,7 +26,7 @@ public:
         g.fillEllipse(sliderBounds.reduced(lineThickness + 2.0f));
         juce::Path backgroundArc;
         backgroundArc.addCentredArc(centerX, centerY, radius, radius, 0.0f, rotaryStartAngle, rotaryEndAngle, true);
-        g.setColour(juce::Colours::black.withAlpha(0.3f));
+        g.setColour(quasar::colours::disabled.withAlpha(0.3f));
         g.strokePath(backgroundArc, juce::PathStrokeType(lineThickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         juce::Path valueArc;
         valueArc.addCentredArc(centerX, centerY, radius, radius, 0.0f, centerAngle, toAngle, true);

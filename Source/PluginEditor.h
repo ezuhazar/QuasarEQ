@@ -32,7 +32,7 @@ public:
     };
     void paintButton(juce::Graphics& g, bool isMouseOverButton, bool isButtonDown) override
     {
-        g.setColour(getToggleState() ? quasar::colours::enabled : quasar::colours::disabled);
+        g.setColour(getToggleState() ? quasar::colours::enabled : quasar::colours::disabled.withAlpha(0.3f));
         g.fillRoundedRectangle(getLocalBounds().toFloat(), 2.5f);
     };
     void mouseEnter(const juce::MouseEvent& event) override
