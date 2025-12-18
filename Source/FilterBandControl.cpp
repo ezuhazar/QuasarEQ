@@ -40,7 +40,7 @@ FilterBandControl::~FilterBandControl()
 }
 void FilterBandControl::resized()
 {
-    auto bounds = getLocalBounds().reduced(5);
+    auto bounds = getLocalBounds().reduced(6);
     typeComboBox.setBounds(bounds.removeFromTop(30).reduced(2));
     int controlHeight = bounds.getHeight() / 3;
     freqSlider.setBounds(bounds.removeFromTop(controlHeight).reduced(2));

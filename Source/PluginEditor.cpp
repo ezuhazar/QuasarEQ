@@ -44,7 +44,7 @@ void QuasarEQAudioProcessorEditor::resized()
     bypathButton.setBounds(top.removeFromLeft(cccc).reduced(margin));
     pluginInfoComponent.setBounds(top.reduced(margin));
     visualizerComponent.setBounds(mid);
-    gainSlider.setBounds(bot.removeFromRight(20 * 3));
+    gainSlider.setBounds(bot.removeFromRight(20 * 3).reduced(margin));
     int bandWidth = bot.getWidth() / audioProcessor.NUM_BANDS;
     for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
     {
