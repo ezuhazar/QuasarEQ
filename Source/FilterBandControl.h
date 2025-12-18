@@ -26,7 +26,7 @@ public:
         g.fillEllipse(sliderBounds.reduced(lineThickness + 2.0f));
         juce::Path backgroundArc;
         backgroundArc.addCentredArc(centerX, centerY, radius, radius, 0.0f, rotaryStartAngle, rotaryEndAngle, true);
-        g.setColour(quasar::colours::disabled.withAlpha(0.3f));
+        g.setColour(quasar::colours::groove.withAlpha(0.3f));
         g.strokePath(backgroundArc, juce::PathStrokeType(lineThickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         juce::Path valueArc;
         valueArc.addCentredArc(centerX, centerY, radius, radius, 0.0f, centerAngle, toAngle, true);
@@ -67,7 +67,10 @@ public:
         auto track = bounds.withSizeKeepingCentre(trackWidth, bounds.getHeight());
         g.setColour(juce::Colours::black.withAlpha(0.3f));
         g.fillRoundedRectangle(track, trackWidth * 0.5f);
-        auto valueRect = track.withTop(sliderPos);
+        float zeroPos = (minSliderPos + maxSliderPos) * 0.5f;
+        auto top = juce::jmin(zeroPos, sliderPos);
+        auto bottom = juce::jmax(zeroPos, sliderPos);
+        auto valueRect = track.withTop(top).withBottom(bottom);
         g.setColour(quasar::colours::enabled);
         g.fillRoundedRectangle(valueRect, trackWidth * 0.5f);
         auto thumbHeight = 12.0f;

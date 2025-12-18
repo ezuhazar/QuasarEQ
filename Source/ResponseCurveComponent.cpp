@@ -58,10 +58,18 @@ void VisualizerComponent::paint(juce::Graphics& g)
         g.setColour(quasar::colours::audioSignal);
         g.strokePath(curvePathPeak, juce::PathStrokeType(1.3f));
     }
+
+
+    auto& apvts = audioProcessor.apvts;
+
+    bool isBypass = apvts.getRawParameterValue("bypass")->load();
     g.setColour(quasar::colours::enabled);
     g.strokePath(responseCurvePath, juce::PathStrokeType(2.5f));
-    g.setFillType(juce::FillType(quasar::colours::audioSignal.withAlpha(0.25f)));
-    g.fillPath(responseCurvePath);
+    if (!isBypass)
+    {
+        g.setFillType(juce::FillType(quasar::colours::audioSignal.withAlpha(0.25f)));
+        g.fillPath(responseCurvePath);
+    }
     g.restoreState();
     const float high = 6.0f;
     const float low = -18.0f;
@@ -74,7 +82,6 @@ void VisualizerComponent::paint(juce::Graphics& g)
     auto bounds = getCurveArea().toFloat();
     const float minDb = -24.0f;
     const float maxDb = 24.0f;
-    auto& apvts = audioProcessor.apvts;
 
     for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
     {
