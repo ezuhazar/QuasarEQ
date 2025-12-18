@@ -32,27 +32,25 @@ void QuasarEQAudioProcessorEditor::paint(juce::Graphics& g)
 }
 void QuasarEQAudioProcessorEditor::resized()
 {
-    const int margin = 12;
-    const int topSectionHeight = 20;
+    const int margin = 6;
+    const int topSectionHeight = 42;
     const int midSectionHeight = 290;
-    const int analyzerSectionWidth = 640;
-    const int knobsSectionHeight = 320;
+    const int botSectionHeight = 320;
     juce::Rectangle<int> mainArea = getLocalBounds().reduced(margin);
-    juce::Rectangle<int> aaa = mainArea.removeFromTop(topSectionHeight);
-    bypathButton.setBounds(aaa.removeFromLeft(topSectionHeight).reduced(2));
-    aaa.removeFromLeft(margin);
-    pluginInfoComponent.setBounds(aaa);
-    mainArea.removeFromTop(margin);
-    visualizerComponent.setBounds(mainArea.removeFromTop(midSectionHeight));
-    mainArea.removeFromTop(margin);
-    juce::Rectangle<int> bandArea = mainArea.removeFromTop(knobsSectionHeight);
-    gainSlider.setBounds(bandArea.removeFromRight(20 * 3));
-    int bandWidth = bandArea.getWidth() / audioProcessor.NUM_BANDS;
+    juce::Rectangle<int> top = mainArea.removeFromTop(topSectionHeight).reduced(margin);
+    juce::Rectangle<int> mid = mainArea.removeFromTop(midSectionHeight).reduced(margin);
+    juce::Rectangle<int> bot = mainArea.removeFromTop(botSectionHeight).reduced(margin);
+    int cccc = top.getHeight();
+    bypathButton.setBounds(top.removeFromLeft(cccc).reduced(margin));
+    pluginInfoComponent.setBounds(top.reduced(margin));
+    visualizerComponent.setBounds(mid);
+    gainSlider.setBounds(bot.removeFromRight(20 * 3));
+    int bandWidth = bot.getWidth() / audioProcessor.NUM_BANDS;
     for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
     {
         if (bandControls[i])
         {
-            bandControls[i]->setBounds(bandArea.removeFromLeft(bandWidth));
+            bandControls[i]->setBounds(bot.removeFromLeft(bandWidth));
         }
     }
 }
