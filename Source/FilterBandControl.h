@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "QuasarHeader.h"
 
 class CustomLNF: public juce::LookAndFeel_V4
 {
@@ -9,25 +10,33 @@ public:
         float sliderPosProportional, float rotaryStartAngle,
         float rotaryEndAngle, juce::Slider& slider) override
     {
-        auto bounds = juce::Rectangle<float>(x, y, width, height).reduced(2.0f);
-        auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
+        auto area = juce::Rectangle<float>(x, y, width, height);
+        auto size = juce::jmin(area.getWidth(), area.getHeight());
+        auto sliderBounds = juce::Rectangle<float>(size, size);
+        sliderBounds.setCentre(area.getCentre());
+        sliderBounds = sliderBounds.reduced(5.0f);
+        auto centerX = sliderBounds.getCentreX();
+        auto centerY = sliderBounds.getCentreY();
+        auto radius = sliderBounds.getWidth() / 2.0f;
+        auto lineThickness = 3.5f;
         auto toAngle = rotaryStartAngle + sliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
-        auto lineThickness = 2.0f;
-        auto arcRadius = radius - lineThickness * 0.5f;
-        g.setColour(juce::Colours::darkgrey);
-        g.fillEllipse(bounds.getCentreX() - radius, bounds.getCentreY() - radius, radius * 2.0f, radius * 2.0f);
-        g.setColour(juce::Colours::cyan);
-        g.drawEllipse(bounds.getCentreX() - radius, bounds.getCentreY() - radius, radius * 2.0f, radius * 2.0f, 1.0f);
-        juce::Path p;
-        auto pointerLength = radius * 0.8f;
-        auto pointerThickness = 3.0f;
-        p.addRectangle(-pointerThickness * 0.5f, -radius, pointerThickness, pointerLength);
-        p.applyTransform(juce::AffineTransform::rotation(toAngle).translated(bounds.getCentreX(), bounds.getCentreY()));
+        auto centerAngle = rotaryStartAngle + (rotaryEndAngle - rotaryStartAngle) * 0.5f;
+        g.setColour(juce::Colour(0xff2d2d2d));
+        g.fillEllipse(sliderBounds.reduced(lineThickness + 2.0f));
+        juce::Path backgroundArc;
+        backgroundArc.addCentredArc(centerX, centerY, radius, radius, 0.0f, rotaryStartAngle, rotaryEndAngle, true);
+        g.setColour(juce::Colours::black.withAlpha(0.3f));
+        g.strokePath(backgroundArc, juce::PathStrokeType(lineThickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        juce::Path valueArc;
+        valueArc.addCentredArc(centerX, centerY, radius, radius, 0.0f, centerAngle, toAngle, true);
+        g.setColour(quasar::colours::enabled);
+        g.strokePath(valueArc, juce::PathStrokeType(lineThickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         g.setColour(juce::Colours::white);
-        g.fillPath(p);
+        auto pX = centerX + (radius - 5.0f) * std::sin(toAngle);
+        auto pY = centerY - (radius - 5.0f) * std::cos(toAngle);
+        g.fillEllipse(pX - 1.0f, pY - 1.0f, 2.0f, 2.0f);
     }
 };
-
 class FilterBandControl: public juce::Component
 {
 public:
