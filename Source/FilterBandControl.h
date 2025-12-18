@@ -45,7 +45,7 @@ public:
         juce::ComboBox& box) override
     {
         auto cornerSize = 3.0f;
-        auto bounds = juce::Rectangle<int>(0, 0, width, height).toFloat().reduced(0.5f);
+        auto bounds = juce::Rectangle<int>(0, 0, width, height).toFloat();
         g.setColour(quasar::colours::labelBackground);
         g.fillRoundedRectangle(bounds, cornerSize);
     }

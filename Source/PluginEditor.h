@@ -20,7 +20,7 @@ public:
         g.drawText(infoText, getLocalBounds(), juce::Justification::centredLeft, false);
     };
 private:
-    static constexpr int FONT_HEIGHT = 20;
+    static constexpr int FONT_HEIGHT = 16;
     juce::String infoText;
 };
 class PowerButton: public juce::Button
