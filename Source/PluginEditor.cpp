@@ -33,13 +33,13 @@ void QuasarEQAudioProcessorEditor::paint(juce::Graphics& g)
 void QuasarEQAudioProcessorEditor::resized()
 {
     const int margin = 12;
-    const int topSectionHeight = 26;
+    const int topSectionHeight = 20;
     const int midSectionHeight = 290;
     const int analyzerSectionWidth = 640;
     const int knobsSectionHeight = 320;
     juce::Rectangle<int> mainArea = getLocalBounds().reduced(margin);
     juce::Rectangle<int> aaa = mainArea.removeFromTop(topSectionHeight);
-    bypathButton.setBounds(aaa.removeFromLeft(topSectionHeight).reduced(4));
+    bypathButton.setBounds(aaa.removeFromLeft(topSectionHeight).reduced(2));
     aaa.removeFromLeft(margin);
     pluginInfoComponent.setBounds(aaa);
     mainArea.removeFromTop(margin);
