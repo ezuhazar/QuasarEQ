@@ -21,7 +21,8 @@ public:
         auto lineThickness = 3.5f;
         auto toAngle = rotaryStartAngle + sliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
         auto centerAngle = rotaryStartAngle + (rotaryEndAngle - rotaryStartAngle) * 0.5f;
-        g.setColour(juce::Colour(0xff2d2d2d));
+        g.setColour(quasar::colours::labelBackground);
+        auto knobRadius = radius - lineThickness - 2.0f;
         g.fillEllipse(sliderBounds.reduced(lineThickness + 2.0f));
         juce::Path backgroundArc;
         backgroundArc.addCentredArc(centerX, centerY, radius, radius, 0.0f, rotaryStartAngle, rotaryEndAngle, true);
@@ -32,9 +33,12 @@ public:
         g.setColour(quasar::colours::enabled);
         g.strokePath(valueArc, juce::PathStrokeType(lineThickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         g.setColour(juce::Colours::white);
-        auto pX = centerX + (radius - 5.0f) * std::sin(toAngle);
-        auto pY = centerY - (radius - 5.0f) * std::cos(toAngle);
-        g.fillEllipse(pX - 1.0f, pY - 1.0f, 2.0f, 2.0f);
+        juce::Path pointer;
+        auto pointerWidth = 2.0f;
+        auto pointerLength = 6.0f;
+        pointer.addRoundedRectangle(-pointerWidth * 0.5f, -knobRadius, pointerWidth, pointerLength, 1.0f);
+        pointer.applyTransform(juce::AffineTransform::rotation(toAngle).translated(centerX, centerY));
+        g.fillPath(pointer);
     }
 };
 class FilterBandControl: public juce::Component
