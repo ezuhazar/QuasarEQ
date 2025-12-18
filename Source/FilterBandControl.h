@@ -40,7 +40,49 @@ public:
         pointer.applyTransform(juce::AffineTransform::rotation(toAngle).translated(centerX, centerY));
         g.fillPath(pointer);
     }
+    void drawComboBox(juce::Graphics& g, int width, int height, bool isButtonDown,
+        int buttonX, int buttonY, int buttonW, int buttonH,
+        juce::ComboBox& box) override
+    {
+        auto cornerSize = 3.0f;
+        auto bounds = juce::Rectangle<int>(0, 0, width, height).toFloat().reduced(0.5f);
+        g.setColour(quasar::colours::labelBackground);
+        g.fillRoundedRectangle(bounds, cornerSize);
+    }
+    void positionComboBoxText(juce::ComboBox& box, juce::Label& label) override
+    {
+        label.setBounds(1, 1, box.getWidth() - 2, box.getHeight() - 2);
+        label.setFont(getComboBoxFont(box));
+        label.setJustificationType(juce::Justification::centred);
+    }
+    void drawTextEditorOutline(juce::Graphics& g, int width, int height, juce::TextEditor& te) override
+    {
+    }
+    void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
+        float sliderPos, float minSliderPos, float maxSliderPos,
+        const juce::Slider::SliderStyle style, juce::Slider& slider) override
+    {
+        auto bounds = juce::Rectangle<float>(x, y, width, height).reduced(10.0f, 5.0f);
+        float trackWidth = 6.0f;
+        auto track = bounds.withSizeKeepingCentre(trackWidth, bounds.getHeight());
+        g.setColour(juce::Colours::black.withAlpha(0.3f));
+        g.fillRoundedRectangle(track, trackWidth * 0.5f);
+        auto valueRect = track.withTop(sliderPos);
+        g.setColour(quasar::colours::enabled);
+        g.fillRoundedRectangle(valueRect, trackWidth * 0.5f);
+        auto thumbHeight = 12.0f;
+        auto thumbWidth = 20.0f;
+        auto thumbRect = juce::Rectangle<float>(thumbWidth, thumbHeight);
+        thumbRect.setCentre(track.getCentreX(), sliderPos);
+        g.setColour(quasar::colours::labelBackground);
+        g.fillRoundedRectangle(thumbRect, 2.0f);
+        g.setColour(juce::Colours::white.withAlpha(0.8f));
+        g.drawRoundedRectangle(thumbRect, 2.0f, 1.0f);
+        g.setColour(juce::Colours::white);
+        g.fillRect(thumbRect.withSizeKeepingCentre(thumbWidth * 0.6f, 1.5f));
+    }
 };
+
 class FilterBandControl: public juce::Component
 {
 public:

@@ -57,6 +57,9 @@ public:
         // Please keep the empty override. I want to disable the double-click parameter reset.
     };
 };
+
+
+
 class QuasarEQAudioProcessorEditor: public juce::AudioProcessorEditor, public juce::ChangeListener
 {
 public:
@@ -71,6 +74,7 @@ private:
     //-----------------------------------------------------
     const juce::Colour BACKGROUND_COLOR = juce::Colour(juce::uint8(40), juce::uint8(42), juce::uint8(50));
     PowerButton bypathButton;
+    CustomLNF customLNF;
     CustomGainSlider gainSlider;
     VisualizerComponent visualizerComponent;
     PluginInfoComponent pluginInfoComponent;

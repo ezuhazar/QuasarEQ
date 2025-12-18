@@ -15,6 +15,7 @@ QuasarEQAudioProcessorEditor::QuasarEQAudioProcessorEditor(QuasarEQAudioProcesso
     }
     addAndMakeVisible(visualizerComponent);
     addAndMakeVisible(pluginInfoComponent);
+    gainSlider.setLookAndFeel(&customLNF);
     addAndMakeVisible(gainSlider);
     addAndMakeVisible(bypathButton);
     outGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "outGain", gainSlider);
