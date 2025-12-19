@@ -5,11 +5,8 @@ FilterBandControl::FilterBandControl(juce::AudioProcessorValueTreeState& apvts, 
 {
     freqSlider.setLookAndFeel(&customLNF);
     gainSlider.setLookAndFeel(&customLNF);
-
-
     typeComboBox.setLookAndFeel(&customLNF);
     typeComboBox.setJustificationType(juce::Justification::centred);
-
     qSlider.setLookAndFeel(&customLNF);
     juce::String index = juce::String(bandIndex + 1);
     freqSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
