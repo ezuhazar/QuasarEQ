@@ -3,7 +3,7 @@
 <JUCERPROJECT id="x6SWnH" name="QuasarEQ" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginManufacturerCode="Ezhz"
               pluginAAXCategory="1" pluginVST3Category="EQ" pluginName="Quasar EQ"
-              companyName="Ezuhazar" version="1.1.0">
+              companyName="Ezuhazar" version="1.1.1">
   <MAINGROUP id="KVWAhs" name="QuasarEQ">
     <GROUP id="{A7B39CBD-CB16-DFB9-4453-FDEE49943E45}" name="Source">
       <FILE id="pX5RqK" name="ResponseCurveComponent.cpp" compile="1" resource="0"
