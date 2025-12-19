@@ -206,11 +206,9 @@ public:
     ~QuasarEQAudioProcessorEditor();
     void paint(juce::Graphics&) override;
     void resized() override;
-    //-----------------------------------------------------
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 private:
     QuasarEQAudioProcessor& audioProcessor;
-    //-----------------------------------------------------
     const juce::Colour BACKGROUND_COLOR = juce::Colour(juce::uint8(40), juce::uint8(42), juce::uint8(50));
     PowerButton bypathButton;
     CustomLNF customLNF;
