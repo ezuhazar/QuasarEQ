@@ -222,7 +222,7 @@ void VisualizerComponent::resized()
     g.setColour(juce::Colours::dimgrey.withAlpha(0.5f));
     g.drawVerticalLine(getLevelMeterArea().getX(), getLevelMeterArea().getY(), getLevelMeterArea().getBottom());
     g.drawVerticalLine(getLevelMeterArea().getRight(), getLevelMeterArea().getY(), getLevelMeterArea().getBottom());
-    g.drawVerticalLine(getLevelMeterArea().getCentreX(), getLevelMeterArea().getY(), getLevelMeterArea().getBottom());
+    //g.drawVerticalLine(getLevelMeterArea().getCentreX(), getLevelMeterArea().getY(), getLevelMeterArea().getBottom());
     g.drawHorizontalLine(getLevelMeterArea().getY(), getLevelMeterArea().getX(), getLevelMeterArea().getRight());
     g.drawHorizontalLine(getLevelMeterArea().getBottom(), getLevelMeterArea().getX(), getLevelMeterArea().getRight());
     g.drawHorizontalLine(getLevelMeterArea().getY() + getLevelMeterArea().getHeight() * (0.25f), getLevelMeterArea().getX(), getLevelMeterArea().getRight());
