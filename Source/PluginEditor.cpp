@@ -1,11 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-QuasarEQAudioProcessorEditor::QuasarEQAudioProcessorEditor(QuasarEQAudioProcessor& p):
-    AudioProcessorEditor(&p),
-    audioProcessor(p),
-    visualizerComponent(p),
-    pluginInfoComponent()
+QuasarEQAudioProcessorEditor::QuasarEQAudioProcessorEditor(QuasarEQAudioProcessor& p): AudioProcessorEditor(&p), audioProcessor(p), visualizerComponent(p), pluginInfoComponent()
 {
     audioProcessor.addChangeListener(this);
     for (int i = 0; i < 8; ++i)
@@ -45,7 +41,7 @@ void QuasarEQAudioProcessorEditor::resized()
     pluginInfoComponent.setBounds(top.reduced(margin));
     visualizerComponent.setBounds(mid);
     gainSlider.setBounds(bot.removeFromRight(20 * 3).reduced(margin));
-    int bandWidth = bot.getWidth() / audioProcessor.NUM_BANDS;
+    const int bandWidth = bot.getWidth() / audioProcessor.NUM_BANDS;
     for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
     {
         if (bandControls[i])
