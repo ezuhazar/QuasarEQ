@@ -169,7 +169,7 @@ public:
     void paintButton(juce::Graphics& g, bool isMouseOverButton, bool isButtonDown) override
     {
         g.setColour(getToggleState() ? quasar::colours::enabled : quasar::colours::disabled);
-        g.fillRoundedRectangle(getLocalBounds().toFloat(), 2.5f);
+        g.fillRect(getLocalBounds());
     };
     void mouseEnter(const juce::MouseEvent& event) override
     {
@@ -213,7 +213,7 @@ public:
         addAndMakeVisible(bypathButton);
         outGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "outGain", gainSlider);
         bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "bypass", bypathButton);
-        setSize(660, 650);
+        setSize(652, 652);
     };
     ~QuasarEQAudioProcessorEditor()
     {
@@ -226,7 +226,7 @@ public:
     void resized() override
     {
         const int margin = 6;
-        const int topSectionHeight = 42;
+        const int topSectionHeight = 40;
         const int midSectionHeight = 300;
         const int botSectionHeight = 300;
         juce::Rectangle<int> mainArea = getLocalBounds().reduced(margin);
