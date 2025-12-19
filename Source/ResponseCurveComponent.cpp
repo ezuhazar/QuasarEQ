@@ -213,8 +213,6 @@ void VisualizerComponent::resized()
     gradientLUT = juce::ColourGradient::vertical(quasar::colours::audioSignal, getCurveArea().toFloat().getY(), quasar::colours::audioSignal.withAlpha(0.3f), getCurveArea().toFloat().getBottom());
     gridCache = juce::Image(juce::Image::ARGB, getWidth(), getHeight(), true);
     juce::Graphics g(gridCache);
-    //g.setColour(quasar::colours::labelBackground);
-    //g.fillRoundedRectangle(getLocalBounds().toFloat(), 5.0f);
     g.setColour(juce::Colours::black);
     g.fillRect(getCurveArea());
     g.fillRect(getLevelMeterArea());
