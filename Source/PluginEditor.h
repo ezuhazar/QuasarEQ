@@ -205,7 +205,7 @@ public:
     QuasarEQAudioProcessorEditor(QuasarEQAudioProcessor& p): AudioProcessorEditor(&p), audioProcessor(p), visualizerComponent(p), pluginInfoComponent()
     {
         audioProcessor.addChangeListener(this);
-        for (int i = 0; i < 8; ++i)
+        for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
         {
             bandControls.push_back(std::make_unique<FilterBandControl>(audioProcessor.apvts, i));
             addAndMakeVisible(*bandControls.back());
