@@ -109,10 +109,10 @@ public:
         qSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
         addAndMakeVisible(qSlider);
         qAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Q" + index, qSlider);
-        typeComboBox.addItem("HP", 1);
-        typeComboBox.addItem("HS", 2);
-        typeComboBox.addItem("LP", 3);
-        typeComboBox.addItem("LS", 4);
+        typeComboBox.addItem("HPF", 1);
+        typeComboBox.addItem("HSF", 2);
+        typeComboBox.addItem("LPF", 3);
+        typeComboBox.addItem("LSF", 4);
         typeComboBox.addItem("PF", 5);
         addAndMakeVisible(typeComboBox);
         typeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, "Type" + index, typeComboBox);
