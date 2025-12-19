@@ -109,11 +109,11 @@ public:
         qSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
         addAndMakeVisible(qSlider);
         qAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Q" + index, qSlider);
-        typeComboBox.addItem("HighPass", 1);
-        typeComboBox.addItem("HighShelf", 2);
-        typeComboBox.addItem("LowPass", 3);
-        typeComboBox.addItem("LowShelf", 4);
-        typeComboBox.addItem("PeakFilter", 5);
+        typeComboBox.addItem("HP", 1);
+        typeComboBox.addItem("HS", 2);
+        typeComboBox.addItem("LP", 3);
+        typeComboBox.addItem("LS", 4);
+        typeComboBox.addItem("PF", 5);
         addAndMakeVisible(typeComboBox);
         typeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, "Type" + index, typeComboBox);
     };
@@ -148,19 +148,15 @@ private:
 class PluginInfoComponent: public juce::Component
 {
 public:
-    PluginInfoComponent()
-    {
-        infoText = juce::String(JucePlugin_Name) + " v" + juce::String(JucePlugin_VersionString);
-    };
     void paint(juce::Graphics& g) override
     {
-        g.setColour(quasar::colours::staticText);
-        g.setFont(FONT_HEIGHT);
-        g.drawText(infoText, getLocalBounds(), juce::Justification::centredLeft, false);
+        const auto textColour = quasar::colours::staticText;
+        const auto textHeight = getLocalBounds().getHeight();
+        const auto text = juce::String(JucePlugin_Name) + " v" + juce::String(JucePlugin_VersionString);
+        g.setColour(textColour);
+        g.setFont(textHeight);
+        g.drawText(text, getLocalBounds(), juce::Justification::centredLeft);
     };
-private:
-    static constexpr int FONT_HEIGHT = 16;
-    juce::String infoText;
 };
 
 class PowerButton: public juce::Button
@@ -231,8 +227,8 @@ public:
     {
         const int margin = 6;
         const int topSectionHeight = 42;
-        const int midSectionHeight = 290;
-        const int botSectionHeight = 320;
+        const int midSectionHeight = 300;
+        const int botSectionHeight = 300;
         juce::Rectangle<int> mainArea = getLocalBounds().reduced(margin);
         juce::Rectangle<int> top = mainArea.removeFromTop(topSectionHeight).reduced(margin);
         juce::Rectangle<int> mid = mainArea.removeFromTop(midSectionHeight).reduced(margin);
