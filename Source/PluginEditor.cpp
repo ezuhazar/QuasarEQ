@@ -40,8 +40,8 @@ void QuasarEQAudioProcessorEditor::resized()
     juce::Rectangle<int> top = mainArea.removeFromTop(topSectionHeight).reduced(margin);
     juce::Rectangle<int> mid = mainArea.removeFromTop(midSectionHeight).reduced(margin);
     juce::Rectangle<int> bot = mainArea.removeFromTop(botSectionHeight).reduced(margin);
-    int cccc = top.getHeight();
-    bypathButton.setBounds(top.removeFromLeft(cccc).reduced(margin));
+    const int sideSize = top.getHeight();
+    bypathButton.setBounds(top.removeFromLeft(sideSize).reduced(margin));
     pluginInfoComponent.setBounds(top.reduced(margin));
     visualizerComponent.setBounds(mid);
     gainSlider.setBounds(bot.removeFromRight(20 * 3).reduced(margin));
