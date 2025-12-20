@@ -73,14 +73,14 @@ private:
         ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(isBypassed)), ...);
     }
 
-
-    using CoefCreator = juce::dsp::IIR::Coefficients<float>::Ptr(*)(double, float, float, float);
+    using NumericType = float;
+    using CoefCreator = juce::dsp::IIR::Coefficients<NumericType>::Ptr(*)(double, NumericType, NumericType, NumericType);
     static constexpr CoefCreator coefCreators[] = {
-        [](double sr, float f, float q, float g) { return juce::dsp::IIR::Coefficients<float>::makeHighPass(sr, f, q); },
-        [](double sr, float f, float q, float g) { return juce::dsp::IIR::Coefficients<float>::makeHighShelf(sr, f, q, g); },
-        [](double sr, float f, float q, float g) { return juce::dsp::IIR::Coefficients<float>::makeLowPass(sr, f, q); },
-        [](double sr, float f, float q, float g) { return juce::dsp::IIR::Coefficients<float>::makeLowShelf(sr, f, q, g); },
-        [](double sr, float f, float q, float g) { return juce::dsp::IIR::Coefficients<float>::makePeakFilter(sr, f, q, g); },
-        [](double sr, float f, float q, float g) { return juce::dsp::IIR::Coefficients<float>::makeHighShelf(sr, f, q, g); }
+        [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makeHighPass(sr, f, q); },
+        [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makeHighShelf(sr, f, q, g); },
+        [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makeLowPass(sr, f, q); },
+        [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makeLowShelf(sr, f, q, g); },
+        [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makePeakFilter(sr, f, q, g); },
+        [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makeHighShelf(sr, f, q, g); }
     };
 };
