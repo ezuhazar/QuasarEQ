@@ -15,6 +15,8 @@ QuasarEQAudioProcessor::QuasarEQAudioProcessor()
 {
     apvts.addParameterListener("outGain", this);
     apvts.addParameterListener("bypass", this);
+
+    const juce::StringArray bandParamPrefixes = {"Freq", "Gain", "Q", "Type"};
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         const juce::String index = juce::String (i + 1);
@@ -26,6 +28,15 @@ QuasarEQAudioProcessor::QuasarEQAudioProcessor()
 
     outGain = apvts.getRawParameterValue("outGain");
     bypass = apvts.getRawParameterValue("bypass");
+    for (int i = 0; i < NUM_BANDS; ++i)
+    {
+        const juce::String idx = juce::String(i + 1);
+        auto& p = bandParams[i];
+        p.freq = apvts.getRawParameterValue("Freq" + idx);
+        p.gain = apvts.getRawParameterValue("Gain" + idx);
+        p.q = apvts.getRawParameterValue("Q" + idx);
+        p.type = apvts.getRawParameterValue("Type" + idx);
+    }
 }
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool QuasarEQAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
@@ -138,11 +149,11 @@ void QuasarEQAudioProcessor::updateFilters()
     const double sampleRate = getSampleRate();
     for (int i = 0; i < NUM_BANDS; ++i)
     {
-        const juce::String index = juce::String(i + 1);
-        const float freq = juce::jmin(apvts.getRawParameterValue("Freq" + index)->load(), static_cast<float>(sampleRate) * 0.49f);
-        const float q = apvts.getRawParameterValue("Q" + index)->load();
-        const float gain = juce::Decibels::decibelsToGain(apvts.getRawParameterValue("Gain" + index)->load());
-        const FilterType typeIndex = static_cast<FilterType>((int)apvts.getRawParameterValue("Type" + index)->load());
+        const auto& p = bandParams[i];
+        const float freq = juce::jmin(p.freq->load(), static_cast<float>(sampleRate) * 0.49f);
+        const float q = p.q->load();
+        const float gain = juce::Decibels::decibelsToGain(p.gain->load());
+        const FilterType typeIndex = static_cast<FilterType>((int)p.type->load());
         switch (typeIndex)
         {
         case HighPass:
