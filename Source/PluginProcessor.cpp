@@ -149,12 +149,14 @@ void QuasarEQAudioProcessor::updateFilters()
     const double sr = getSampleRate();
     for (int i = 0; i < NUM_BANDS; ++i)
     {
-        const auto& params = bandParams[i];
-        const float f = juce::jmin(params.f->load(), static_cast<float>(sr) * 0.49f);
-        const float q = params.q->load();
-        const float g = juce::Decibels::decibelsToGain(params.g->load());
-        const int type = static_cast<int>(params.type->load());
-        coefsBuffer[i] = coefCreators[type](sr, f, q, g);
+        const auto& p = bandParams[i];
+        const auto f = static_cast<NumericType>(p.f->load());
+        const auto q = static_cast<NumericType>(p.q->load());
+        const auto g = static_cast<NumericType>(p.g->load());
+        const auto t = static_cast<int>(p.type->load());
+        const auto fClamped = juce::jmin(f, static_cast<NumericType>(sr * 0.49));
+        const auto gLinear = juce::Decibels::decibelsToGain(g);
+        coefsBuffer[i] = coefCreators[t](sr, fClamped, q, gLinear);
     }
     const bool isBypassed = static_cast<bool>(bypass->load());
     outputGain.setBypassed<0>(isBypassed);
