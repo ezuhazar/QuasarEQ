@@ -146,7 +146,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::crea
 }
 void QuasarEQAudioProcessor::updateFilters()
 {
-    const double sr = getSampleRate();
+    const auto sr = getSampleRate();
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         const auto& bandP = bandParams[i];
@@ -154,13 +154,14 @@ void QuasarEQAudioProcessor::updateFilters()
         const auto bandQ = bandP.q->load();
         const auto bandG = juce::Decibels::decibelsToGain(bandP.g->load());
         const auto bandT = static_cast<int>(bandP.t->load());
-        coefsBuffer[i] = coefCreators[bandT](sr, bandF, bandQ, bandG);
+        coefsBuffer[i] = filterFactories[bandT](sr, bandF, bandQ, bandG);
     }
     const auto isBypass = static_cast<bool>(bypassParam->load());
     const auto g = outGainParam->load();
     outGain.setBypassed<0>(isBypass);
     outGain.get<0>().setGainDecibels(g);
-    updateFilterChainCoefficients(coefsBuffer, isBypass, std::make_index_sequence<NUM_BANDS>{});
+    const auto sequence = std::make_index_sequence<NUM_BANDS> {};
+    updateFilterChainCoefficients(coefsBuffer, isBypass, sequence);
     {
         juce::ScopedLock lock (coefficientsLock);
         sharedCoefficients = coefsBuffer;

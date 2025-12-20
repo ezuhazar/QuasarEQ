@@ -45,16 +45,6 @@ private:
     static constexpr float FREQ_INTERVAL = 0.1f;
     static constexpr float Q_INTERVAL = 0.001f;
 
-    std::atomic<float>* outGainParam = nullptr;
-    std::atomic<float>* bypassParam = nullptr;
-    struct BandParamCache
-    {
-        std::atomic<float>* f = nullptr;
-        std::atomic<float>* g = nullptr;
-        std::atomic<float>* q = nullptr;
-        std::atomic<float>* t = nullptr;
-    };
-    std::array<BandParamCache, NUM_BANDS> bandParams;
 
     CoefPtrArray coefsBuffer;
     CoefPtrArray sharedCoefficients;
@@ -72,14 +62,27 @@ private:
     }
 
     using NumericType = float;
-    using CoefCreator = juce::dsp::IIR::Coefficients<NumericType>::Ptr(*)(double, NumericType, NumericType, NumericType);
-    static constexpr CoefCreator coefCreators[] = {
-        [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makeHighPass(sr, f, q); },
-        [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makeHighShelf(sr, f, q, g); },
-        [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makeLowPass(sr, f, q); },
-        [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makeLowShelf(sr, f, q, g); },
-        [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makePeakFilter(sr, f, q, g); },
-        [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makeHighShelf(sr, f, q, g); }
+    using FilterCoefs = juce::dsp::IIR::Coefficients<NumericType>;
+    using FilterFactory = FilterCoefs::Ptr(*)(double, NumericType, NumericType, NumericType);
+    static constexpr FilterFactory filterFactories[] = {
+        [](auto sr, auto f, auto q, auto g) { return FilterCoefs::makeHighPass(sr, f, q); },
+        [](auto sr, auto f, auto q, auto g) { return FilterCoefs::makeHighShelf(sr, f, q, g); },
+        [](auto sr, auto f, auto q, auto g) { return FilterCoefs::makeLowPass(sr, f, q); },
+        [](auto sr, auto f, auto q, auto g) { return FilterCoefs::makeLowShelf(sr, f, q, g); },
+        [](auto sr, auto f, auto q, auto g) { return FilterCoefs::makePeakFilter(sr, f, q, g); },
+        [](auto sr, auto f, auto q, auto g) { return FilterCoefs::makeHighShelf(sr, f, q, g); }
     };
     juce::dsp::ProcessorChain<juce::dsp::Gain<NumericType>> outGain;
+
+    using Param = std::atomic<float>;
+    Param* outGainParam = nullptr;
+    Param* bypassParam = nullptr;
+    struct BandParamCache
+    {
+        Param* f = nullptr;
+        Param* g = nullptr;
+        Param* q = nullptr;
+        Param* t = nullptr;
+    };
+    std::array<BandParamCache, NUM_BANDS> bandParams;
 };
