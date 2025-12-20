@@ -6,8 +6,6 @@
               companyName="Ezuhazar" version="1.1.1">
   <MAINGROUP id="KVWAhs" name="QuasarEQ">
     <GROUP id="{A7B39CBD-CB16-DFB9-4453-FDEE49943E45}" name="Source">
-      <FILE id="pX5RqK" name="ResponseCurveComponent.cpp" compile="1" resource="0"
-            file="Source/ResponseCurveComponent.cpp"/>
       <FILE id="uzHQBj" name="ResponseCurveComponent.h" compile="0" resource="0"
             file="Source/ResponseCurveComponent.h"/>
       <FILE id="PHceqy" name="QuasarHeader.h" compile="0" resource="0" file="Source/QuasarHeader.h"/>

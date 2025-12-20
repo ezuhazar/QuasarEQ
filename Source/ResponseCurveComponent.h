@@ -221,6 +221,43 @@ private:
         }
         return p;
     };
+    void calculateResponseCurve()
+    {
+        const int curveSize = getCurveArea().getWidth();
+        const float minHz = MIN_HZ;
+        const float maxHz = MAX_HZ;
+        double sampleRate = audioProcessor.getSampleRate();
+        responseCurveMagnitude.clear();
+        responseCurveMagnitude.resize(curveSize, 0.0f);
+        auto allCoefficients = audioProcessor.getSharedCoefficients();
+        for (int i = 0; i < curveSize; ++i)
+        {
+            float normalizedX = (float)i / (float)(curveSize - 1);
+            float freqHz = juce::mapToLog10(normalizedX, minHz, maxHz);
+            float totalGainLinear = 1.0f;
+            for (const auto& coefs : allCoefficients)
+            {
+                totalGainLinear *= coefs->getMagnitudeForFrequency(freqHz, sampleRate);
+            }
+            responseCurveMagnitude[i] = juce::Decibels::gainToDecibels(totalGainLinear);
+        }
+        auto bounds = getCurveArea().toFloat();
+        const float minDb = -24.0f;
+        const float maxDb = 24.0f;
+        responseCurvePath.clear();
+        responseCurvePath.startNewSubPath(getLocalBounds().toFloat().getX(), getLocalBounds().toFloat().getCentreY());
+        for (size_t i = 0; i < responseCurveMagnitude.size(); ++i)
+        {
+
+            float magnitudeDb = responseCurveMagnitude[i];
+            float normalizedX = (float)i / (float)(responseCurveMagnitude.size() - 1);
+            float x = bounds.getX() + bounds.getWidth() * normalizedX;
+            float y = juce::jmap(magnitudeDb, minDb, maxDb, bounds.getBottom(), bounds.getY());
+
+            responseCurvePath.lineTo(x, y);
+        }
+        responseCurvePath.lineTo(getLocalBounds().toFloat().getRight(), getLocalBounds().toFloat().getCentreY());
+    };
     static constexpr float MIN_HZ = 20.0f;
     static constexpr float MAX_HZ = 20000.0f;
     static constexpr float MIN_DBFS = -90.0f;
@@ -279,43 +316,5 @@ private:
         VisualizerComponent& responseCurveComponent;
     };
     AnalyzerThread analyzerThread;
-
-    void calculateResponseCurve()
-    {
-        const int curveSize = getCurveArea().getWidth();
-        const float minHz = MIN_HZ;
-        const float maxHz = MAX_HZ;
-        double sampleRate = audioProcessor.getSampleRate();
-        responseCurveMagnitude.clear();
-        responseCurveMagnitude.resize(curveSize, 0.0f);
-        auto allCoefficients = audioProcessor.getSharedCoefficients();
-        for (int i = 0; i < curveSize; ++i)
-        {
-            float normalizedX = (float)i / (float)(curveSize - 1);
-            float freqHz = juce::mapToLog10(normalizedX, minHz, maxHz);
-            float totalGainLinear = 1.0f;
-            for (const auto& coefs : allCoefficients)
-            {
-                totalGainLinear *= coefs->getMagnitudeForFrequency(freqHz, sampleRate);
-            }
-            responseCurveMagnitude[i] = juce::Decibels::gainToDecibels(totalGainLinear);
-        }
-        auto bounds = getCurveArea().toFloat();
-        const float minDb = -24.0f;
-        const float maxDb = 24.0f;
-        responseCurvePath.clear();
-        responseCurvePath.startNewSubPath(getLocalBounds().toFloat().getX(), getLocalBounds().toFloat().getCentreY());
-        for (size_t i = 0; i < responseCurveMagnitude.size(); ++i)
-        {
-
-            float magnitudeDb = responseCurveMagnitude[i];
-            float normalizedX = (float)i / (float)(responseCurveMagnitude.size() - 1);
-            float x = bounds.getX() + bounds.getWidth() * normalizedX;
-            float y = juce::jmap(magnitudeDb, minDb, maxDb, bounds.getBottom(), bounds.getY());
-
-            responseCurvePath.lineTo(x, y);
-        }
-        responseCurvePath.lineTo(getLocalBounds().toFloat().getRight(), getLocalBounds().toFloat().getCentreY());
-    };
     std::vector<float> responseCurveMagnitude;
 };
