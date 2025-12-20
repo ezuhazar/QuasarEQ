@@ -91,6 +91,8 @@ public:
     }
 };
 
+
+
 class FilterBandControl: public juce::Component
 {
 public:
