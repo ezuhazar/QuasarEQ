@@ -138,14 +138,14 @@ private:
         g.fillRect(getCurveArea());
         g.fillRect(getLevelMeterArea());
         g.setColour(juce::Colours::dimgrey.withAlpha(0.5f));
+        g.drawRect(getLevelMeterArea());
         g.drawHorizontalLine(getLevelMeterArea().getY() + getLevelMeterArea().getHeight() * (0.25f), getLevelMeterArea().getX(), getLevelMeterArea().getRight());
         g.drawVerticalLine(getLevelMeterArea().getCentreX(), getLevelMeterArea().getY(), getLevelMeterArea().getBottom());
-        g.drawRect(getLevelMeterArea());
         std::vector<float> gridLUTX;
         std::vector<float> gridLUTY;
-        for (float freq : gridFrequencies)
+        for (GridMarker freq : gridMarkers)
         {
-            gridLUTX.push_back(getCurveArea().getX() + getCurveArea().getWidth() * juce::mapFromLog10(freq, MIN_HZ, MAX_HZ));
+            gridLUTX.push_back(getCurveArea().getX() + getCurveArea().getWidth() * juce::mapFromLog10(freq.frequency, MIN_HZ, MAX_HZ));
         }
         for (size_t i = 0; i < 9; ++i)
         {
@@ -164,9 +164,9 @@ private:
         const int freqLabelY = getCurveArea().getBottom() + margin - HALF_FONT_HEIGHT;
         for (size_t i = 0; i < gridLUTX.size(); ++i)
         {
-            const int stringWidth = g.getCurrentFont().getStringWidth(frequencyTags[i]);
+            const int stringWidth = g.getCurrentFont().getStringWidth(gridMarkers[i].tag);
             const int labelX = static_cast<int>(std::roundf(gridLUTX[i] - stringWidth * 0.5f));
-            g.drawText(frequencyTags[i], labelX, freqLabelY, stringWidth, FONT_HEIGHT, juce::Justification::centred, false);
+            g.drawText(gridMarkers[i].tag, labelX, freqLabelY, stringWidth, FONT_HEIGHT, juce::Justification::centred, false);
         }
         for (size_t i = 0; i < gridLUTY.size(); ++i)
         {
@@ -266,12 +266,25 @@ private:
     static constexpr int FONT_HEIGHT = HALF_FONT_HEIGHT * 2;
     static constexpr int margin = 10;
     static constexpr int THREAD_SLEEP_TIME = 20;
-    const std::vector<float> gridFrequencies = {
-        20.0f, 50.0f, 100.0f, 200.0f, 500.0f, 1000.0f, 2000.0f, 5000.0f, 10000.0f, 20000.0f
+
+    struct GridMarker
+    {
+        float frequency;
+        juce::String tag;
     };
-    const std::vector<juce::String> frequencyTags = {
-        "20", "50", "100", "200", "500", "1k", "2k", "5k", "10k", "20k"
+    const std::vector<GridMarker> gridMarkers = {
+        {20.0f, "20"},
+        {50.0f, "50"},
+        {100.0f, "100"},
+        {200.0f, "200"},
+        {500.0f, "500"},
+        {1000.0f, "1k"},
+        {2000.0f, "2k"},
+        {5000.0f, "5k"},
+        {10000.0f, "10k"},
+        {20000.0f, "20k"},
     };
+
     const std::vector<juce::String> dbTags = {
         "+24", "+18", "+12", "+6", "0", "-6", "-12", "-18", "-24"
     };
