@@ -147,20 +147,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::crea
 void QuasarEQAudioProcessor::updateFilters()
 {
     const auto sr = getSampleRate();
-    for (int i = 0; i < NUM_BANDS; ++i)
-    {
-        const auto& bandP = bandParams[i];
-        const auto bandF = juce::jmin(bandP.f->load(), static_cast<float>(sr * 0.49));
-        const auto bandQ = bandP.q->load();
-        const auto bandG = juce::Decibels::decibelsToGain(bandP.g->load());
-        const auto bandT = static_cast<int>(bandP.t->load());
-        coefsBuffer[i] = filterFactories[bandT](sr, bandF, bandQ, bandG);
-    }
+    const auto sequence = std::make_index_sequence<NUM_BANDS> {};
+    updateAllBands(sr, sequence);
     const auto isBypass = static_cast<bool>(bypassParam->load());
     const auto g = outGainParam->load();
     outGain.setBypassed<0>(isBypass);
     outGain.get<0>().setGainDecibels(g);
-    const auto sequence = std::make_index_sequence<NUM_BANDS> {};
     updateFilterChainCoefficients(coefsBuffer, isBypass, sequence);
     {
         juce::ScopedLock lock (coefficientsLock);

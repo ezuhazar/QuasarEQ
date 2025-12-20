@@ -89,4 +89,20 @@ private:
         Param* t = nullptr;
     };
     std::array<BandParamCache, NUM_BANDS> bandParams;
+
+    template <std::size_t... Is>
+    void updateAllBands(const double sr, std::index_sequence<Is...>)
+    {
+        ((
+            [this, sr](size_t i)
+            {
+                const auto& bandP = bandParams[i];
+                const auto bandF = juce::jmin(bandP.f->load(), static_cast<float>(sr * 0.49));
+                const auto bandQ = bandP.q->load();
+                const auto bandG = juce::Decibels::decibelsToGain(bandP.g->load());
+                const auto bandT = static_cast<int>(bandP.t->load());
+                coefsBuffer[i] = filterFactories[bandT](sr, bandF, bandQ, bandG);
+            }(Is)
+                ), ...);
+    }
 };
