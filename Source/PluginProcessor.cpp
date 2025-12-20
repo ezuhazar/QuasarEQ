@@ -15,7 +15,6 @@ QuasarEQAudioProcessor::QuasarEQAudioProcessor()
 {
     apvts.addParameterListener("outGain", this);
     apvts.addParameterListener("bypass", this);
-    const juce::StringArray bandParamPrefixes = {"Freq", "Gain", "Q", "Type"};
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         const juce::String index = juce::String (i + 1);
