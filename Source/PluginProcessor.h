@@ -63,11 +63,14 @@ private:
 
     using NumericType = float;
     using FilterCoefs = juce::dsp::IIR::Coefficients<NumericType>;
-    using FilterFactory = FilterCoefs::Ptr(*)(double, NumericType, NumericType, NumericType);
-    template <FilterCoefs::Ptr (*F)(double, NumericType, NumericType, NumericType)>
-    static FilterCoefs::Ptr wrap(double sr, NumericType f, NumericType q, NumericType g) { return F(sr, f, q, g); }
-    template <FilterCoefs::Ptr (*F)(double, NumericType, NumericType)>
-    static FilterCoefs::Ptr wrap(double sr, NumericType f, NumericType q, NumericType g) { return F(sr, f, q); }
+    using FilterCoefsPtr = FilterCoefs::Ptr;
+    using FilterFactory = FilterCoefsPtr(*)(double, NumericType, NumericType, NumericType);
+
+    template <FilterCoefsPtr (*F)(double, NumericType, NumericType, NumericType)>
+    static FilterCoefsPtr wrap(double sr, NumericType f, NumericType q, NumericType g) { return F(sr, f, q, g); }
+    template <FilterCoefsPtr (*F)(double, NumericType, NumericType)>
+    static FilterCoefsPtr wrap(double sr, NumericType f, NumericType q, NumericType g) { return F(sr, f, q); }
+
     static constexpr FilterFactory filterFactories[] = {
         wrap<FilterCoefs::makeHighPass>,
         wrap<FilterCoefs::makeHighShelf>,
@@ -80,6 +83,7 @@ private:
     juce::dsp::ProcessorChain<juce::dsp::Gain<NumericType>> outGain;
 
     using Param = std::atomic<float>;
+
     Param* outGainParam = nullptr;
     Param* bypassParam = nullptr;
     struct BandParamCache
