@@ -72,4 +72,15 @@ private:
     {
         ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(isBypassed)), ...);
     }
+
+
+    using CoefCreator = juce::dsp::IIR::Coefficients<float>::Ptr(*)(double, float, float, float);
+    static constexpr CoefCreator coefCreators[] = {
+        [](double sr, float f, float q, float g) { return juce::dsp::IIR::Coefficients<float>::makeHighPass(sr, f, q); },
+        [](double sr, float f, float q, float g) { return juce::dsp::IIR::Coefficients<float>::makeHighShelf(sr, f, q, g); },
+        [](double sr, float f, float q, float g) { return juce::dsp::IIR::Coefficients<float>::makeLowPass(sr, f, q); },
+        [](double sr, float f, float q, float g) { return juce::dsp::IIR::Coefficients<float>::makeLowShelf(sr, f, q, g); },
+        [](double sr, float f, float q, float g) { return juce::dsp::IIR::Coefficients<float>::makePeakFilter(sr, f, q, g); },
+        [](double sr, float f, float q, float g) { return juce::dsp::IIR::Coefficients<float>::makeHighShelf(sr, f, q, g); }
+    };
 };

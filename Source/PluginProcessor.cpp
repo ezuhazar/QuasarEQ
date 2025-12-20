@@ -146,35 +146,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout QuasarEQAudioProcessor::crea
 }
 void QuasarEQAudioProcessor::updateFilters()
 {
-    const double sampleRate = getSampleRate();
+    const double sr = getSampleRate();
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         const auto& p = bandParams[i];
-        const float freq = juce::jmin(p.freq->load(), static_cast<float>(sampleRate) * 0.49f);
+        const float f = juce::jmin(p.freq->load(), static_cast<float>(sr) * 0.49f);
         const float q = p.q->load();
-        const float gain = juce::Decibels::decibelsToGain(p.gain->load());
+        const float g = juce::Decibels::decibelsToGain(p.gain->load());
         const FilterType typeIndex = static_cast<FilterType>((int)p.type->load());
-        switch (typeIndex)
-        {
-        case HighPass:
-            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, freq, q);
-            break;
-        case HighShelf:
-            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, freq, q, gain);
-            break;
-        case LowPass:
-            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, freq, q);
-            break;
-        case LowShelf:
-            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, freq, q, gain);
-            break;
-        case PeakFilter:
-            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, q, gain);
-            break;
-        default:
-            coefsBuffer[i] = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, freq, q, gain);
-            break;
-        }
+        coefsBuffer[i] = coefCreators[typeIndex](sr, f, q, g);
     }
     const bool isBypassed = bypass->load();
     const float gain = outGain->load();
