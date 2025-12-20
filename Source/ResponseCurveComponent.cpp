@@ -210,19 +210,19 @@ void VisualizerComponent::handleAsyncUpdate()
 }
 void VisualizerComponent::resized()
 {
-    gradientLUT = juce::ColourGradient::vertical(quasar::colours::audioSignal, getCurveArea().toFloat().getY(), quasar::colours::audioSignal.withAlpha(0.3f), getCurveArea().toFloat().getBottom());
+    gradientLUT = juce::ColourGradient::vertical(quasar::colours::audioSignal.withAlpha(0.5f), getCurveArea().toFloat().getY(), quasar::colours::audioSignal.withAlpha(0.5f), getCurveArea().toFloat().getBottom());
     gridCache = juce::Image(juce::Image::ARGB, getWidth(), getHeight(), true);
     juce::Graphics g(gridCache);
     g.setColour(juce::Colours::black);
     g.fillRect(getCurveArea());
     g.fillRect(getLevelMeterArea());
     g.setColour(juce::Colours::dimgrey.withAlpha(0.5f));
-    g.drawVerticalLine(getLevelMeterArea().getX(), getLevelMeterArea().getY(), getLevelMeterArea().getBottom());
-    g.drawVerticalLine(getLevelMeterArea().getRight(), getLevelMeterArea().getY(), getLevelMeterArea().getBottom());
-    g.drawVerticalLine(getLevelMeterArea().getCentreX(), getLevelMeterArea().getY(), getLevelMeterArea().getBottom());
-    g.drawHorizontalLine(getLevelMeterArea().getY(), getLevelMeterArea().getX(), getLevelMeterArea().getRight());
-    g.drawHorizontalLine(getLevelMeterArea().getBottom(), getLevelMeterArea().getX(), getLevelMeterArea().getRight());
+
+
     g.drawHorizontalLine(getLevelMeterArea().getY() + getLevelMeterArea().getHeight() * (0.25f), getLevelMeterArea().getX(), getLevelMeterArea().getRight());
+    g.drawVerticalLine(getLevelMeterArea().getCentreX(), getLevelMeterArea().getY(), getLevelMeterArea().getBottom());
+    g.drawRect(getLevelMeterArea());
+
     std::vector<float> gridLUTX;
     std::vector<float> gridLUTY;
     for (float freq : gridFrequencies)
