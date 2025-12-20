@@ -9,9 +9,6 @@
       <FILE id="uzHQBj" name="ResponseCurveComponent.h" compile="0" resource="0"
             file="Source/ResponseCurveComponent.h"/>
       <FILE id="PHceqy" name="QuasarHeader.h" compile="0" resource="0" file="Source/QuasarHeader.h"/>
-      <FILE id="M2QH5Z" name="PathProducer.cpp" compile="1" resource="0"
-            file="Source/PathProducer.cpp"/>
-      <FILE id="hTvsWg" name="PathProducer.h" compile="0" resource="0" file="Source/PathProducer.h"/>
       <FILE id="n7yoD4" name="QFifo.h" compile="0" resource="0" file="Source/QFifo.h"/>
       <FILE id="Ota7AD" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

@@ -1,9 +1,177 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "PluginProcessor.h" 
-#include "PathProducer.h" 
+#include "PluginProcessor.h"
 #include "QuasarHeader.h"
+
+struct SpectrumRenderData
+{
+    std::vector<float> spectrumPath;
+    std::vector<float> peakHoldPath;
+    float leftDB = -100.0f;
+    float rightDB = -100.0f;
+};
+class PathProducer
+{
+public:
+    PathProducer(SingleChannelSampleFifo& leftScsf, SingleChannelSampleFifo& rightScsf): leftChannelFifo(&leftScsf), rightChannelFifo(&rightScsf)
+    {
+        fftBuffer.setSize(1, FFT_OUT_SIZE, false, true, true);
+        monoBufferL.setSize(1, FFT_SIZE, false, true, true);
+        monoBufferR.setSize(1, FFT_SIZE, false, true, true);
+        monoAverageBuffer.setSize(1, FFT_SIZE, false, true, true);
+        peakFallVelocity.assign(RENDER_OUT_SIZE, 0.0f);
+        peakHoldDecibels.assign(RENDER_OUT_SIZE, -std::numeric_limits<float>::infinity());
+        currentDecibels.assign(RENDER_OUT_SIZE, -std::numeric_limits<float>::infinity());
+        Gains.assign(RENDER_OUT_SIZE, 0.0f);
+        SmoothGains.assign(RENDER_OUT_SIZE, 0.0f);
+    };
+    void process(double sampleRate)
+    {
+        juce::AudioBuffer<float> leftIncomingBuffer, rightIncomingBuffer;
+        bool aaa = false;
+        while (leftChannelFifo->getNumCompleteBuffersAvailable() > 0 && rightChannelFifo->getNumCompleteBuffersAvailable() > 0)
+        {
+            if (leftChannelFifo->getAudioBuffer(leftIncomingBuffer) && rightChannelFifo->getAudioBuffer(rightIncomingBuffer))
+            {
+                aaa = true;
+                const int incomingSize = leftIncomingBuffer.getNumSamples();
+                currentLeftGain = leftIncomingBuffer.getMagnitude(0, 0, incomingSize);
+                currentRightGain = rightIncomingBuffer.getMagnitude(0, 0, incomingSize);
+                const int copySize = FFT_SIZE - incomingSize;
+                monoBufferL.copyFrom(0, 0, monoBufferL.getReadPointer(0, incomingSize), copySize);
+                monoBufferR.copyFrom(0, 0, monoBufferR.getReadPointer(0, incomingSize), copySize);
+                monoBufferL.copyFrom(0, copySize, leftIncomingBuffer.getReadPointer(0), incomingSize);
+                monoBufferR.copyFrom(0, copySize, rightIncomingBuffer.getReadPointer(0), incomingSize);
+                auto* destData = monoAverageBuffer.getWritePointer(0);
+                juce::FloatVectorOperations::copy(destData, monoBufferL.getReadPointer(0), FFT_SIZE);
+                juce::FloatVectorOperations::add(destData, monoBufferR.getReadPointer(0), FFT_SIZE);
+                juce::FloatVectorOperations::multiply(destData, 0.5f, FFT_SIZE);
+                auto* fftDataWritePointer = fftBuffer.getWritePointer(0);
+                juce::FloatVectorOperations::clear(fftDataWritePointer, FFT_OUT_SIZE);
+                juce::FloatVectorOperations::copy(fftDataWritePointer, monoAverageBuffer.getReadPointer(0), FFT_SIZE);
+                windowing.multiplyWithWindowingTable(fftDataWritePointer, FFT_SIZE);
+                fft.performFrequencyOnlyForwardTransform(fftDataWritePointer);
+                juce::FloatVectorOperations::multiply(fftDataWritePointer, fftDataWritePointer, INVERSE_NUM_BINS, NUM_BINS);
+                generatePath(fftDataWritePointer, static_cast<float>(incomingSize) / sampleRate);
+            }
+        }
+        if (aaa)
+        {
+            pathFifo.push({currentDecibels, peakHoldDecibels, juce::Decibels::gainToDecibels(smoothedLeftGain), juce::Decibels::gainToDecibels(smoothedRightGain)});
+        }
+    };
+    int getNumPathsAvailable() const
+    {
+        return pathFifo.getNumAvailableForReading();
+    }
+    ;
+    bool getPath(SpectrumRenderData& path)
+    {
+        return pathFifo.pull(path);
+    };
+    std::vector<float> makeFreqLUT(const double sampleRate, const float minHz, const float maxHz) const
+    {
+        std::vector<float> frequencyLUT;
+        frequencyLUT.reserve(RENDER_OUT_SIZE);
+        const float binWidth = static_cast<float>(sampleRate / FFT_SIZE);
+        for (int levelIndex = 0, sourceDataIndex = 0, outputIndex = 0; levelIndex < NUM_SECTIONS; ++levelIndex)
+        {
+            const int windowSize = 1 << levelIndex;
+            const int nextOutputStart = outputIndex + (SECTION_SIZE >> levelIndex);
+            for (; outputIndex < nextOutputStart; ++outputIndex)
+            {
+
+                frequencyLUT.push_back(juce::mapFromLog10((binWidth * sourceDataIndex), minHz, maxHz));
+                sourceDataIndex += windowSize;
+            }
+        }
+        return frequencyLUT;
+    };
+private:
+    static constexpr int FFT_ORDER = 12;
+    static constexpr int NUM_SECTIONS = 1 << 3;
+    static constexpr int SECTION_SIZE = 1 << 8;
+    static constexpr int NUM_BINS = 1 << (FFT_ORDER - 1);
+    static constexpr int FFT_SIZE = 1 << FFT_ORDER;
+    static constexpr int FFT_OUT_SIZE = 1 << (FFT_ORDER + 1);
+    static constexpr int RENDER_OUT_SIZE = 510;
+    static constexpr float INVERSE_NUM_BINS = 1.0f / (1 << (FFT_ORDER - 1));
+    static constexpr float SMOOTHING_TIME_CONSTANT = 0.02f;
+    static constexpr float PEAK_DECAY_RATE = 80.0f;
+    static constexpr float LEVEL_METER_SMOOTHING_TIME_CONSTANT = SMOOTHING_TIME_CONSTANT * 5.0f;
+    SingleChannelSampleFifo* leftChannelFifo;
+    SingleChannelSampleFifo* rightChannelFifo;
+    juce::AudioBuffer<float> monoBufferL;
+    juce::AudioBuffer<float> monoBufferR;
+    juce::AudioBuffer<float> fftBuffer;
+    juce::AudioBuffer<float> monoAverageBuffer;
+    juce::dsp::FFT fft {FFT_ORDER};
+    juce::dsp::WindowingFunction<float> windowing {size_t(FFT_SIZE), juce::dsp::WindowingFunction<float>::blackmanHarris, true};
+    std::vector<float> peakFallVelocity;
+    std::vector<float> peakHoldDecibels;
+    std::vector<float> Gains;
+    std::vector<float> SmoothGains;
+    std::vector<float> currentDecibels;
+    float currentLeftGain = 0.0f;
+    float currentRightGain = 0.0f;
+    float smoothedLeftGain = 0.0f;
+    float smoothedRightGain = 0.0f;
+    Fifo<SpectrumRenderData> pathFifo;
+    void generatePath(const float* renderData, const float deltaTime)
+    {
+        for (int levelIndex = 0, sourceDataIndex = 0, outputIndex = 0; levelIndex < NUM_SECTIONS; ++levelIndex)
+        {
+            const int windowSize = 1 << levelIndex;
+            const int nextOutputStart = outputIndex + (SECTION_SIZE >> levelIndex);
+            for (; outputIndex < nextOutputStart; ++outputIndex)
+            {
+                Gains[outputIndex] = *std::max_element(renderData + sourceDataIndex, renderData + sourceDataIndex + windowSize);
+                sourceDataIndex += windowSize;
+            }
+        }
+        const float peakFallRate = PEAK_DECAY_RATE * deltaTime;
+        const float alphaSmooth = 1.0f - std::exp(-deltaTime / SMOOTHING_TIME_CONSTANT);
+        const float oneMinusAlpha = 1.0f - alphaSmooth;
+        for (size_t i = 0; i < RENDER_OUT_SIZE; ++i)
+        {
+            if (SmoothGains[i] > Gains[i])
+            {
+                SmoothGains[i] = alphaSmooth * Gains[i] + oneMinusAlpha * SmoothGains[i];
+            }
+            else
+            {
+                SmoothGains[i] = Gains[i];
+            }
+            currentDecibels[i] = juce::Decibels::gainToDecibels(SmoothGains[i]);
+            peakFallVelocity[i] += peakFallRate;
+            peakHoldDecibels[i] -= peakFallVelocity[i] * deltaTime;
+            if (currentDecibels[i] >= peakHoldDecibels[i])
+            {
+                peakFallVelocity[i] = 0.0f;
+                peakHoldDecibels[i] = currentDecibels[i];
+            }
+        }
+        const float levelMeterAlphaSmooth = 1.0f - std::exp(-deltaTime / (LEVEL_METER_SMOOTHING_TIME_CONSTANT));
+        const float levelMeterOneMinusAlpha = 1.0f - levelMeterAlphaSmooth;
+        if (currentLeftGain < smoothedLeftGain)
+        {
+            smoothedLeftGain = levelMeterAlphaSmooth * currentLeftGain + levelMeterOneMinusAlpha * smoothedLeftGain;
+        }
+        else
+        {
+            smoothedLeftGain = currentLeftGain;
+        }
+        if (currentRightGain < smoothedRightGain)
+        {
+            smoothedRightGain = levelMeterAlphaSmooth * currentRightGain + levelMeterOneMinusAlpha * smoothedRightGain;
+        }
+        else
+        {
+            smoothedRightGain = currentRightGain;
+        }
+    };
+};
 
 class VisualizerComponent: public juce::Component, private juce::AsyncUpdater
 {
