@@ -8,6 +8,11 @@
 class CustomLNF: public juce::LookAndFeel_V4
 {
 public:
+
+    CustomLNF()
+    {
+        setColour(juce::Slider::textBoxBackgroundColourId, juce::Colours::black);
+    }
     void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override
     {
         auto area = juce::Rectangle<float>(x, y, width, height);
