@@ -65,12 +65,10 @@ private:
     using FilterCoefs = juce::dsp::IIR::Coefficients<NumericType>;
     using FilterCoefsPtr = FilterCoefs::Ptr;
     using FilterFactory = FilterCoefsPtr(*)(double, NumericType, NumericType, NumericType);
-
     template <FilterCoefsPtr (*F)(double, NumericType, NumericType, NumericType)>
     static FilterCoefsPtr wrap(double sr, NumericType f, NumericType q, NumericType g) { return F(sr, f, q, g); }
     template <FilterCoefsPtr (*F)(double, NumericType, NumericType)>
     static FilterCoefsPtr wrap(double sr, NumericType f, NumericType q, NumericType g) { return F(sr, f, q); }
-
     static constexpr FilterFactory filterFactories[] = {
         wrap<FilterCoefs::makeHighPass>,
         wrap<FilterCoefs::makeHighShelf>,
@@ -79,11 +77,8 @@ private:
         wrap<FilterCoefs::makePeakFilter>,
         wrap<FilterCoefs::makeHighShelf>
     };
-
     juce::dsp::ProcessorChain<juce::dsp::Gain<NumericType>> outGain;
-
-    using Param = std::atomic<float>;
-
+    using Param = std::remove_pointer_t<decltype(std::declval<juce::AudioProcessorValueTreeState>().getRawParameterValue(""))>;
     Param* outGainParam = nullptr;
     Param* bypassParam = nullptr;
     struct BandParamCache
