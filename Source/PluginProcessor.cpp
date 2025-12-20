@@ -26,8 +26,8 @@ QuasarEQAudioProcessor::QuasarEQAudioProcessor()
         }
     }
 
-    outGain = apvts.getRawParameterValue("outGain");
-    bypass = apvts.getRawParameterValue("bypass");
+    outGainParam = apvts.getRawParameterValue("outGain");
+    bypassParam = apvts.getRawParameterValue("bypass");
     for (int i = 0; i < NUM_BANDS; ++i)
     {
         const juce::String idx = juce::String(i + 1);
@@ -35,7 +35,7 @@ QuasarEQAudioProcessor::QuasarEQAudioProcessor()
         p.f = apvts.getRawParameterValue("Freq" + idx);
         p.g = apvts.getRawParameterValue("Gain" + idx);
         p.q = apvts.getRawParameterValue("Q" + idx);
-        p.type = apvts.getRawParameterValue("Type" + idx);
+        p.t = apvts.getRawParameterValue("Type" + idx);
     }
 }
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -80,8 +80,8 @@ void QuasarEQAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
     rightChannelFifo.prepare(samplesPerBlock);
     filterChain.prepare(spec);
     filterChain.reset();
-    outputGain.prepare(spec);
-    outputGain.reset();
+    outGain.prepare(spec);
+    outGain.reset();
     updateFilters();
 }
 void QuasarEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
@@ -100,7 +100,7 @@ void QuasarEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     juce::dsp::AudioBlock<float> block(buffer);
     juce::dsp::ProcessContextReplacing<float> context(block);
     filterChain.process(context);
-    outputGain.process(context);
+    outGain.process(context);
     leftChannelFifo.update(buffer);
     rightChannelFifo.update(buffer);
 }
@@ -149,19 +149,18 @@ void QuasarEQAudioProcessor::updateFilters()
     const double sr = getSampleRate();
     for (int i = 0; i < NUM_BANDS; ++i)
     {
-        const auto& p = bandParams[i];
-        const auto f = static_cast<NumericType>(p.f->load());
-        const auto q = static_cast<NumericType>(p.q->load());
-        const auto g = static_cast<NumericType>(p.g->load());
-        const auto t = static_cast<int>(p.type->load());
-        const auto fClamped = juce::jmin(f, static_cast<NumericType>(sr * 0.49));
-        const auto gLinear = juce::Decibels::decibelsToGain(g);
-        coefsBuffer[i] = coefCreators[t](sr, fClamped, q, gLinear);
+        const auto& bandP = bandParams[i];
+        const auto bandF = juce::jmin(bandP.f->load(), static_cast<float>(sr * 0.49));
+        const auto bandQ = bandP.q->load();
+        const auto bandG = juce::Decibels::decibelsToGain(bandP.g->load());
+        const auto bandT = static_cast<int>(bandP.t->load());
+        coefsBuffer[i] = coefCreators[bandT](sr, bandF, bandQ, bandG);
     }
-    const bool isBypassed = static_cast<bool>(bypass->load());
-    outputGain.setBypassed<0>(isBypassed);
-    outputGain.get<0>().setGainDecibels(outGain->load());
-    updateFilterChainCoefficients(coefsBuffer, isBypassed, std::make_index_sequence<NUM_BANDS>{});
+    const auto isBypass = static_cast<bool>(bypassParam->load());
+    const auto g = outGainParam->load();
+    outGain.setBypassed<0>(isBypass);
+    outGain.get<0>().setGainDecibels(g);
+    updateFilterChainCoefficients(coefsBuffer, isBypass, std::make_index_sequence<NUM_BANDS>{});
     {
         juce::ScopedLock lock (coefficientsLock);
         sharedCoefficients = coefsBuffer;

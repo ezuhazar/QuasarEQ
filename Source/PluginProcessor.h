@@ -45,14 +45,14 @@ private:
     static constexpr float FREQ_INTERVAL = 0.1f;
     static constexpr float Q_INTERVAL = 0.001f;
 
-    std::atomic<float>* outGain = nullptr;
-    std::atomic<float>* bypass = nullptr;
+    std::atomic<float>* outGainParam = nullptr;
+    std::atomic<float>* bypassParam = nullptr;
     struct BandParamCache
     {
         std::atomic<float>* f = nullptr;
         std::atomic<float>* g = nullptr;
         std::atomic<float>* q = nullptr;
-        std::atomic<float>* type = nullptr;
+        std::atomic<float>* t = nullptr;
     };
     std::array<BandParamCache, NUM_BANDS> bandParams;
 
@@ -60,7 +60,6 @@ private:
     CoefPtrArray sharedCoefficients;
     std::atomic<bool> parametersChanged {true};
     void updateFilters();
-    juce::dsp::ProcessorChain<juce::dsp::Gain<float>> outputGain;
     template <typename T, size_t N, typename... Args> struct RepeatTypeHelper: RepeatTypeHelper<T, N - 1, T, Args...> {};
     template <typename T, typename... Args> struct RepeatTypeHelper<T, 0, Args...> { using Type = juce::dsp::ProcessorChain<Args...>; };
     typename RepeatTypeHelper<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>, NUM_BANDS>::Type filterChain;
@@ -82,4 +81,5 @@ private:
         [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makePeakFilter(sr, f, q, g); },
         [](auto sr, auto f, auto q, auto g) { return juce::dsp::IIR::Coefficients<NumericType>::makeHighShelf(sr, f, q, g); }
     };
+    juce::dsp::ProcessorChain<juce::dsp::Gain<NumericType>> outGain;
 };
