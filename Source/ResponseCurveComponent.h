@@ -42,7 +42,6 @@ private:
 	std::vector<juce::Point<float>> spectrumPoints;
 	std::vector<juce::Point<float>> peakHoldPoints;
 	std::vector<float> freqLUT;
-	juce::ColourGradient gradientLUT;
 	juce::CriticalSection pathLock;
 	juce::CriticalSection freqLUTLock;
 	juce::Image gridCache;
