@@ -257,18 +257,8 @@ public:
             const int textHeight = 12;
             g.setFont(textHeight);
             const int textWidth = g.getCurrentFont().getStringWidth(bandNumber);
-            juce::Rectangle<int> textBounds(
-                juce::roundToInt(x - textWidth * 0.5f),
-                y - 6,
-                textWidth,
-                textHeight
-            );
-            g.drawText(
-                bandNumber,
-                textBounds,
-                juce::Justification::centred,
-                false
-            );
+            juce::Rectangle<int> textBounds(  juce::roundToInt(x - textWidth * 0.5f),    y - 6,      textWidth,  textHeight   );
+            g.drawText(  bandNumber, textBounds,   juce::Justification::centred,  false );
         }
     };
     bool parametersNeedUpdate = true;
