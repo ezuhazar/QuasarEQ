@@ -23,6 +23,9 @@ QuasarEQAudioProcessor::QuasarEQAudioProcessor()
             apvts.addParameterListener (prefix + index, this);
         }
     }
+
+    outGain = apvts.getRawParameterValue("outGain");
+    bypass = apvts.getRawParameterValue("bypass");
 }
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool QuasarEQAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
@@ -162,10 +165,10 @@ void QuasarEQAudioProcessor::updateFilters()
             break;
         }
     }
-    const bool isBypassed = apvts.getRawParameterValue("bypass")->load();
-    const float gain = juce::Decibels::decibelsToGain(apvts.getRawParameterValue("outGain")->load());
+    const bool isBypassed = bypass->load();
+    const float gain = outGain->load();
     outputGain.setBypassed<0>(isBypassed);
-    outputGain.get<0>().setGainLinear(gain);
+    outputGain.get<0>().setGainDecibels(gain);
     updateFilterChainCoefficients(coefsBuffer, isBypassed, std::make_index_sequence<NUM_BANDS>{});
     {
         juce::ScopedLock lock (coefficientsLock);

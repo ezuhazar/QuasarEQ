@@ -45,6 +45,8 @@ private:
     static constexpr float FREQ_INTERVAL = 0.1f;
     static constexpr float Q_INTERVAL = 0.001f;
     const juce::StringArray bandParamPrefixes = {"Freq", "Gain", "Q", "Type"};
+    std::atomic<float>* outGain = nullptr;
+    std::atomic<float>* bypass = nullptr;
     CoefPtrArray coefsBuffer;
     CoefPtrArray sharedCoefficients;
     std::atomic<bool> parametersChanged {true};
