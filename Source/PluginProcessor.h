@@ -49,8 +49,8 @@ private:
     std::atomic<float>* bypass = nullptr;
     struct BandParamCache
     {
-        std::atomic<float>* freq = nullptr;
-        std::atomic<float>* gain = nullptr;
+        std::atomic<float>* f = nullptr;
+        std::atomic<float>* g = nullptr;
         std::atomic<float>* q = nullptr;
         std::atomic<float>* type = nullptr;
     };
@@ -60,7 +60,6 @@ private:
     CoefPtrArray sharedCoefficients;
     std::atomic<bool> parametersChanged {true};
     void updateFilters();
-    enum FilterType { HighPass, HighShelf, LowPass, LowShelf, PeakFilter };
     juce::dsp::ProcessorChain<juce::dsp::Gain<float>> outputGain;
     template <typename T, size_t N, typename... Args> struct RepeatTypeHelper: RepeatTypeHelper<T, N - 1, T, Args...> {};
     template <typename T, typename... Args> struct RepeatTypeHelper<T, 0, Args...> { using Type = juce::dsp::ProcessorChain<Args...>; };
