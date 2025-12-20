@@ -64,14 +64,19 @@ private:
     using NumericType = float;
     using FilterCoefs = juce::dsp::IIR::Coefficients<NumericType>;
     using FilterFactory = FilterCoefs::Ptr(*)(double, NumericType, NumericType, NumericType);
+    template <FilterCoefs::Ptr (*F)(double, NumericType, NumericType, NumericType)>
+    static FilterCoefs::Ptr wrap(double sr, NumericType f, NumericType q, NumericType g) { return F(sr, f, q, g); }
+    template <FilterCoefs::Ptr (*F)(double, NumericType, NumericType)>
+    static FilterCoefs::Ptr wrap(double sr, NumericType f, NumericType q, NumericType g) { return F(sr, f, q); }
     static constexpr FilterFactory filterFactories[] = {
-        [](auto sr, auto f, auto q, auto g) { return FilterCoefs::makeHighPass(sr, f, q); },
-        [](auto sr, auto f, auto q, auto g) { return FilterCoefs::makeHighShelf(sr, f, q, g); },
-        [](auto sr, auto f, auto q, auto g) { return FilterCoefs::makeLowPass(sr, f, q); },
-        [](auto sr, auto f, auto q, auto g) { return FilterCoefs::makeLowShelf(sr, f, q, g); },
-        [](auto sr, auto f, auto q, auto g) { return FilterCoefs::makePeakFilter(sr, f, q, g); },
-        [](auto sr, auto f, auto q, auto g) { return FilterCoefs::makeHighShelf(sr, f, q, g); }
+        wrap<FilterCoefs::makeHighPass>,
+        wrap<FilterCoefs::makeHighShelf>,
+        wrap<FilterCoefs::makeLowPass>,
+        wrap<FilterCoefs::makeLowShelf>,
+        wrap<FilterCoefs::makePeakFilter>,
+        wrap<FilterCoefs::makeHighShelf>
     };
+
     juce::dsp::ProcessorChain<juce::dsp::Gain<NumericType>> outGain;
 
     using Param = std::atomic<float>;
