@@ -3,7 +3,6 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "ResponseCurveComponent.h"
-#include "QuasarHeader.h"
 
 class CustomLNF: public juce::LookAndFeel_V4
 {

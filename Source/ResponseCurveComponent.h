@@ -2,7 +2,21 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
-#include "QuasarHeader.h"
+#include <cstdint>
+
+namespace quasar
+{
+    namespace colours
+    {
+        const juce::Colour enabled {0xff7391ff};
+        const juce::Colour groove {0xff000000};
+        const juce::Colour disabled {0xff555555};
+        const juce::Colour staticText {0xffd3d3d3};
+        const juce::Colour labelBackground {0xff17171a};
+        const juce::Colour audioSignal {0xff4d76ff};
+    }
+}
+
 
 struct SpectrumRenderData
 {
@@ -20,6 +34,7 @@ public:
         monoBufferL.setSize(1, FFT_SIZE, false, true, true);
         monoBufferR.setSize(1, FFT_SIZE, false, true, true);
         monoAverageBuffer.setSize(1, FFT_SIZE, false, true, true);
+
         peakFallVelocity.assign(RENDER_OUT_SIZE, 0.0f);
         peakHoldDecibels.assign(RENDER_OUT_SIZE, -std::numeric_limits<float>::infinity());
         currentDecibels.assign(RENDER_OUT_SIZE, -std::numeric_limits<float>::infinity());
