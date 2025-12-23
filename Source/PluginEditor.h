@@ -158,7 +158,7 @@ public:
     {
         const auto textColour = quasar::colours::staticText;
         const auto textHeight = getLocalBounds().getHeight();
-        const auto text = juce::String(JucePlugin_Name) + " v" + juce::String(JucePlugin_VersionString);
+        const auto text = "Quasar EQ v" + juce::String(JucePlugin_VersionString);
         g.setColour(textColour);
         g.setFont(textHeight);
         g.drawText(text, getLocalBounds(), juce::Justification::centredLeft);
