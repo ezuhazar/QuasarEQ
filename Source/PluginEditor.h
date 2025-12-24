@@ -593,7 +593,7 @@ public:
 class FilterBandControl: public juce::Component
 {
 public:
-    FilterBandControl(juce::AudioProcessorValueTreeState& apvts, int bandIndex, juce::LookAndFeel& lnf)
+    FilterBandControl(juce::AudioProcessorValueTreeState& apvts, int bandIndex)
     {
         typeComboBox.setJustificationType(juce::Justification::centred);
         typeComboBox.addItem("HPF", 1);
@@ -601,14 +601,13 @@ public:
         typeComboBox.addItem("LPF", 3);
         typeComboBox.addItem("LSF", 4);
         typeComboBox.addItem("PF", 5);
-        for (auto* s : sliders)
+        for (auto* s : {&freqSlider, &gainSlider, &qSlider})
         {
-            s->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-            s->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
+            s->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+            s->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 20);
         }
         for (auto* c : allComponents)
         {
-            c->setLookAndFeel(&lnf);
             addAndMakeVisible(c);
         }
         const juce::String index = juce::String(bandIndex + 1);
@@ -617,13 +616,7 @@ public:
         qAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Q" + index, qSlider);
         typeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, "Type" + index, typeComboBox);
     };
-    ~FilterBandControl() override
-    {
-        for (auto* c : allComponents)
-        {
-            c->setLookAndFeel(nullptr);
-        }
-    };
+    ~FilterBandControl() override {};
     void resized() override
     {
         auto bounds = getLocalBounds().reduced(6);
@@ -635,7 +628,6 @@ public:
     };
 private:
     std::vector<juce::Component*> allComponents {&typeComboBox, &freqSlider, &gainSlider, &qSlider};
-    std::vector<juce::Slider*> sliders {&freqSlider, &gainSlider, &qSlider};
     juce::Slider freqSlider;
     juce::Slider gainSlider;
     juce::Slider qSlider;
@@ -651,11 +643,12 @@ class QuasarEQAudioProcessorEditor: public juce::AudioProcessorEditor, public ju
 public:
     QuasarEQAudioProcessorEditor(QuasarEQAudioProcessor& p): AudioProcessorEditor(&p), audioProcessor(p), visualizerComponent(p), pluginInfoComponent()
     {
+        setLookAndFeel(&customLNF);
         audioProcessor.addChangeListener(this);
-        gainSlider.setLookAndFeel(&customLNF);
+
         for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
         {
-            bandControls.push_back(std::make_unique<FilterBandControl>(audioProcessor.apvts, i, customLNF));
+            bandControls.push_back(std::make_unique<FilterBandControl>(audioProcessor.apvts, i));
             addAndMakeVisible(*bandControls.back());
         }
         addAndMakeVisible(visualizerComponent);
@@ -666,10 +659,11 @@ public:
         bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "bypass", bypathButton);
         setSize(652, 652);
     };
-    ~QuasarEQAudioProcessorEditor()
+    QuasarEQAudioProcessorEditor::~QuasarEQAudioProcessorEditor()
     {
+        setLookAndFeel(nullptr);
         audioProcessor.removeChangeListener(this);
-    };
+    }
     void paint(juce::Graphics& g) override
     {
         g.fillAll(BACKGROUND_COLOR);
@@ -755,10 +749,10 @@ private:
         };
     };
 
+    CustomLNF customLNF;
     QuasarEQAudioProcessor& audioProcessor;
     const juce::Colour BACKGROUND_COLOR = juce::Colour(juce::uint8(40), juce::uint8(42), juce::uint8(50));
     PowerButton bypathButton;
-    CustomLNF customLNF;
     CustomGainSlider gainSlider;
     VisualizerComponent visualizerComponent;
     PluginInfoComponent pluginInfoComponent;
