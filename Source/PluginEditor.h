@@ -646,57 +646,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> qAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> typeAttachment;
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FilterBandControl)
-};
-
-class PluginInfoComponent: public juce::Component
-{
-public:
-    void paint(juce::Graphics& g) override
-    {
-        const auto textColour = quasar::colours::staticText;
-        const auto textHeight = getLocalBounds().getHeight();
-        const auto text = "Quasar EQ v" + juce::String(JucePlugin_VersionString);
-        g.setColour(textColour);
-        g.setFont(textHeight);
-        g.drawText(text, getLocalBounds(), juce::Justification::centredLeft);
-    };
-};
-
-class PowerButton: public juce::Button
-{
-public:
-    PowerButton(): juce::Button("PowerButton")
-    {
-        setClickingTogglesState(true);
-    };
-    void paintButton(juce::Graphics& g, bool isMouseOverButton, bool isButtonDown) override
-    {
-        g.setColour(getToggleState() ? quasar::colours::enabled : quasar::colours::disabled);
-        g.fillRect(getLocalBounds());
-    };
-    void mouseEnter(const juce::MouseEvent& event) override
-    {
-        setMouseCursor(juce::MouseCursor::PointingHandCursor);
-    };
-    void mouseExit(const juce::MouseEvent& event) override
-    {
-        setMouseCursor(juce::MouseCursor::NormalCursor);
-    };
-};
-
-class CustomGainSlider: public juce::Slider
-{
-public:
-    CustomGainSlider()
-    {
-        setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-        setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
-    };
-    void mouseDoubleClick (const juce::MouseEvent& event) override
-    {
-        // Please keep the empty override. I want to disable the double-click parameter reset.
-    };
 };
 
 class QuasarEQAudioProcessorEditor: public juce::AudioProcessorEditor, public juce::ChangeListener
@@ -760,6 +709,54 @@ public:
         }
     };
 private:
+    class CustomGainSlider: public juce::Slider
+    {
+    public:
+        CustomGainSlider()
+        {
+            setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+            setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
+        };
+        void mouseDoubleClick (const juce::MouseEvent& event) override
+        {
+            // Please keep the empty override. I want to disable the double-click parameter reset.
+        };
+    };
+    class PluginInfoComponent: public juce::Component
+    {
+    public:
+        void paint(juce::Graphics& g) override
+        {
+            const auto textColour = quasar::colours::staticText;
+            const auto textHeight = getLocalBounds().getHeight();
+            const auto text = "Quasar EQ v" + juce::String(JucePlugin_VersionString);
+            g.setColour(textColour);
+            g.setFont(textHeight);
+            g.drawText(text, getLocalBounds(), juce::Justification::centredLeft);
+        };
+    };
+    class PowerButton: public juce::Button
+    {
+    public:
+        PowerButton(): juce::Button("PowerButton")
+        {
+            setClickingTogglesState(true);
+        };
+        void paintButton(juce::Graphics& g, bool isMouseOverButton, bool isButtonDown) override
+        {
+            g.setColour(getToggleState() ? quasar::colours::enabled : quasar::colours::disabled);
+            g.fillRect(getLocalBounds());
+        };
+        void mouseEnter(const juce::MouseEvent& event) override
+        {
+            setMouseCursor(juce::MouseCursor::PointingHandCursor);
+        };
+        void mouseExit(const juce::MouseEvent& event) override
+        {
+            setMouseCursor(juce::MouseCursor::NormalCursor);
+        };
+    };
+
     QuasarEQAudioProcessor& audioProcessor;
     const juce::Colour BACKGROUND_COLOR = juce::Colour(juce::uint8(40), juce::uint8(42), juce::uint8(50));
     PowerButton bypathButton;
