@@ -507,11 +507,10 @@ private:
 class CustomLNF: public juce::LookAndFeel_V4
 {
 public:
-
     CustomLNF()
     {
-        setColour(juce::Slider::textBoxBackgroundColourId, juce::Colours::black);
         setColour(juce::Label::textColourId, quasar::colours::staticText);
+        setColour (juce::Label::backgroundWhenEditingColourId, juce::Colours::black);
     }
     void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override
     {
@@ -658,7 +657,7 @@ public:
 
         pluginInfoLabel.setText("Quasar EQ v" + juce::String(JucePlugin_VersionString), juce::dontSendNotification);
         pluginInfoLabel.setJustificationType(juce::Justification::centredLeft);
-        pluginInfoLabel.setFont(16.0f); // ˆÈ‘O‚Ì textHeight ‘Š“–‚Ì’l‚ðŽw’è
+        pluginInfoLabel.setFont(16.0f);
         addAndMakeVisible(pluginInfoLabel);
 
         addAndMakeVisible(gainSlider);
@@ -688,6 +687,7 @@ public:
         juce::Rectangle<int> bot = mainArea.removeFromTop(botSectionHeight).reduced(margin);
         const int sideSize = top.getHeight();
         bypassButton.setBounds(top.removeFromLeft(sideSize).reduced(margin));
+        bypassButton.setClickingTogglesState(true);
         pluginInfoLabel.setBounds(top.reduced(margin));
         visualizerComponent.setBounds(mid);
         gainSlider.setBounds(bot.removeFromRight(20 * 3).reduced(margin));
@@ -712,18 +712,13 @@ private:
     class CustomGainSlider: public juce::Slider
     {
     public:
-        void mouseDoubleClick (const juce::MouseEvent& event) override
-        {
-            // Please keep the empty override. I want to disable the double-click parameter reset.
-        };
+        // Please keep the empty override. I want to disable the double-click parameter reset.
+        void mouseDoubleClick (const juce::MouseEvent& event) override {};
     };
     class PowerButton: public juce::Button
     {
     public:
-        PowerButton(): juce::Button("PowerButton")
-        {
-            setClickingTogglesState(true);
-        };
+        PowerButton(): juce::Button("PowerButton") {};
         void paintButton(juce::Graphics& g, bool isMouseOverButton, bool isButtonDown) override
         {
             g.setColour(getToggleState() ? quasar::colours::enabled : quasar::colours::disabled);
