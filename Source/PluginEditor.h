@@ -511,6 +511,7 @@ public:
     CustomLNF()
     {
         setColour(juce::Slider::textBoxBackgroundColourId, juce::Colours::black);
+        setColour(juce::Label::textColourId, quasar::colours::staticText);
     }
     void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override
     {
@@ -641,7 +642,7 @@ private:
 class QuasarEQAudioProcessorEditor: public juce::AudioProcessorEditor, public juce::ChangeListener
 {
 public:
-    QuasarEQAudioProcessorEditor(QuasarEQAudioProcessor& p): AudioProcessorEditor(&p), audioProcessor(p), visualizerComponent(p), pluginInfoComponent()
+    QuasarEQAudioProcessorEditor(QuasarEQAudioProcessor& p): AudioProcessorEditor(&p), audioProcessor(p), visualizerComponent(p)
     {
         setLookAndFeel(&customLNF);
         audioProcessor.addChangeListener(this);
@@ -654,7 +655,12 @@ public:
         gainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
         gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
         addAndMakeVisible(visualizerComponent);
-        addAndMakeVisible(pluginInfoComponent);
+
+        pluginInfoLabel.setText("Quasar EQ v" + juce::String(JucePlugin_VersionString), juce::dontSendNotification);
+        pluginInfoLabel.setJustificationType(juce::Justification::centredLeft);
+        pluginInfoLabel.setFont(16.0f); // ˆÈ‘O‚Ì textHeight ‘Š“–‚Ì’l‚ðŽw’è
+        addAndMakeVisible(pluginInfoLabel);
+
         addAndMakeVisible(gainSlider);
         addAndMakeVisible(bypassButton);
         outGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "outGain", gainSlider);
@@ -682,7 +688,7 @@ public:
         juce::Rectangle<int> bot = mainArea.removeFromTop(botSectionHeight).reduced(margin);
         const int sideSize = top.getHeight();
         bypassButton.setBounds(top.removeFromLeft(sideSize).reduced(margin));
-        pluginInfoComponent.setBounds(top.reduced(margin));
+        pluginInfoLabel.setBounds(top.reduced(margin));
         visualizerComponent.setBounds(mid);
         gainSlider.setBounds(bot.removeFromRight(20 * 3).reduced(margin));
         const int bandWidth = bot.getWidth() / audioProcessor.NUM_BANDS;
@@ -709,19 +715,6 @@ private:
         void mouseDoubleClick (const juce::MouseEvent& event) override
         {
             // Please keep the empty override. I want to disable the double-click parameter reset.
-        };
-    };
-    class PluginInfoComponent: public juce::Component
-    {
-    public:
-        void paint(juce::Graphics& g) override
-        {
-            const auto textColour = quasar::colours::staticText;
-            const auto textHeight = getLocalBounds().getHeight();
-            const auto text = "Quasar EQ v" + juce::String(JucePlugin_VersionString);
-            g.setColour(textColour);
-            g.setFont(textHeight);
-            g.drawText(text, getLocalBounds(), juce::Justification::centredLeft);
         };
     };
     class PowerButton: public juce::Button
@@ -751,7 +744,7 @@ private:
     PowerButton bypassButton;
     CustomGainSlider gainSlider;
     VisualizerComponent visualizerComponent;
-    PluginInfoComponent pluginInfoComponent;
+    juce::Label pluginInfoLabel;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> outGainAttachment;
     std::vector<std::unique_ptr<FilterBandControl>> bandControls;
