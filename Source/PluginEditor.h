@@ -595,43 +595,34 @@ class FilterBandControl: public juce::Component
 public:
     FilterBandControl(juce::AudioProcessorValueTreeState& apvts, int bandIndex, juce::LookAndFeel& lnf)
     {
-        freqSlider.setLookAndFeel(&lnf);
-        gainSlider.setLookAndFeel(&lnf);
-        qSlider.setLookAndFeel(&lnf);
-        typeComboBox.setLookAndFeel(&lnf);
-
-        freqSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        gainSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        qSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-
-        freqSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
-        gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
-        qSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
-
         typeComboBox.setJustificationType(juce::Justification::centred);
         typeComboBox.addItem("HPF", 1);
         typeComboBox.addItem("HSF", 2);
         typeComboBox.addItem("LPF", 3);
         typeComboBox.addItem("LSF", 4);
         typeComboBox.addItem("PF", 5);
-
+        for (auto* s : sliders)
+        {
+            s->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+            s->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
+        }
+        for (auto* c : allComponents)
+        {
+            c->setLookAndFeel(&lnf);
+            addAndMakeVisible(c);
+        }
         const juce::String index = juce::String(bandIndex + 1);
         freqAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Freq" + index, freqSlider);
         gainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Gain" + index, gainSlider);
         qAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Q" + index, qSlider);
         typeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, "Type" + index, typeComboBox);
-
-        addAndMakeVisible(freqSlider);
-        addAndMakeVisible(gainSlider);
-        addAndMakeVisible(qSlider);
-        addAndMakeVisible(typeComboBox);
     };
     ~FilterBandControl() override
     {
-        freqSlider.setLookAndFeel(nullptr);
-        gainSlider.setLookAndFeel(nullptr);
-        qSlider.setLookAndFeel(nullptr);
-        typeComboBox.setLookAndFeel(nullptr);
+        for (auto* c : allComponents)
+        {
+            c->setLookAndFeel(nullptr);
+        }
     };
     void resized() override
     {
@@ -643,6 +634,8 @@ public:
         qSlider.setBounds(bounds.reduced(2));
     };
 private:
+    std::vector<juce::Component*> allComponents {&typeComboBox, &freqSlider, &gainSlider, &qSlider};
+    std::vector<juce::Slider*> sliders {&freqSlider, &gainSlider, &qSlider};
     juce::Slider freqSlider;
     juce::Slider gainSlider;
     juce::Slider qSlider;
