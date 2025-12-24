@@ -651,12 +651,14 @@ public:
             bandControls.push_back(std::make_unique<FilterBandControl>(audioProcessor.apvts, i));
             addAndMakeVisible(*bandControls.back());
         }
+        gainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+        gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
         addAndMakeVisible(visualizerComponent);
         addAndMakeVisible(pluginInfoComponent);
         addAndMakeVisible(gainSlider);
-        addAndMakeVisible(bypathButton);
+        addAndMakeVisible(bypassButton);
         outGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "outGain", gainSlider);
-        bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "bypass", bypathButton);
+        bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "bypass", bypassButton);
         setSize(652, 652);
     };
     QuasarEQAudioProcessorEditor::~QuasarEQAudioProcessorEditor()
@@ -679,7 +681,7 @@ public:
         juce::Rectangle<int> mid = mainArea.removeFromTop(midSectionHeight).reduced(margin);
         juce::Rectangle<int> bot = mainArea.removeFromTop(botSectionHeight).reduced(margin);
         const int sideSize = top.getHeight();
-        bypathButton.setBounds(top.removeFromLeft(sideSize).reduced(margin));
+        bypassButton.setBounds(top.removeFromLeft(sideSize).reduced(margin));
         pluginInfoComponent.setBounds(top.reduced(margin));
         visualizerComponent.setBounds(mid);
         gainSlider.setBounds(bot.removeFromRight(20 * 3).reduced(margin));
@@ -704,11 +706,6 @@ private:
     class CustomGainSlider: public juce::Slider
     {
     public:
-        CustomGainSlider()
-        {
-            setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-            setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
-        };
         void mouseDoubleClick (const juce::MouseEvent& event) override
         {
             // Please keep the empty override. I want to disable the double-click parameter reset.
@@ -748,11 +745,10 @@ private:
             setMouseCursor(juce::MouseCursor::NormalCursor);
         };
     };
-
     CustomLNF customLNF;
     QuasarEQAudioProcessor& audioProcessor;
     const juce::Colour BACKGROUND_COLOR = juce::Colour(juce::uint8(40), juce::uint8(42), juce::uint8(50));
-    PowerButton bypathButton;
+    PowerButton bypassButton;
     CustomGainSlider gainSlider;
     VisualizerComponent visualizerComponent;
     PluginInfoComponent pluginInfoComponent;
