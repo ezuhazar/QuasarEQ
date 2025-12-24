@@ -39,18 +39,20 @@ QuasarEQAudioProcessor::QuasarEQAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool QuasarEQAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
-#if JucePlugin_IsMidiEffect
-    juce::ignoreUnused(layouts);
-    return true;
-#else
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono() && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+    if constexpr (JucePlugin_IsMidiEffect)
+    {
+        return true;
+    }
+    const auto mainOutput = layouts.getMainOutputChannelSet();
+    if (mainOutput != juce::AudioChannelSet::mono() && mainOutput != juce::AudioChannelSet::stereo())
+    {
         return false;
-#if ! JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-        return false;
-#endif
+    }
+    if constexpr (!JucePlugin_IsSynth)
+    {
+        return mainOutput == layouts.getMainInputChannelSet();
+    }
     return true;
-#endif
 }
 #endif
 int QuasarEQAudioProcessor::getNumPrograms() { return 1; }
