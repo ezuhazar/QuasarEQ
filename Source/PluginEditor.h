@@ -654,6 +654,7 @@ public:
     QuasarEQAudioProcessorEditor(QuasarEQAudioProcessor& p): AudioProcessorEditor(&p), audioProcessor(p), visualizerComponent(p), pluginInfoComponent()
     {
         audioProcessor.addChangeListener(this);
+        gainSlider.setLookAndFeel(&customLNF);
         for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
         {
             bandControls.push_back(std::make_unique<FilterBandControl>(audioProcessor.apvts, i));
@@ -661,7 +662,6 @@ public:
         }
         addAndMakeVisible(visualizerComponent);
         addAndMakeVisible(pluginInfoComponent);
-        gainSlider.setLookAndFeel(&customLNF);
         addAndMakeVisible(gainSlider);
         addAndMakeVisible(bypathButton);
         outGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "outGain", gainSlider);
