@@ -355,7 +355,7 @@ private:
         auto bounds = getCurveArea().toFloat();
         const float minDb = -24.0f;
         const float maxDb = 24.0f;
-        const float tolerance = 7.0f;
+        const float tolerance = 7.75f;
         for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
         {
             juce::String index = juce::String(i + 1);
