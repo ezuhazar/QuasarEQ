@@ -279,6 +279,8 @@ public:
         const float maxDb = 24.0f;
         for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
         {
+            bool isHighLighted = (mouseOverBand == i && draggingBand == -1);
+            bool isHighLighted = (mouseOverBand == i && draggingBand == -1);
             juce::String index = juce::String(i + 1);
             float freqHz = apvts.getRawParameterValue("Freq" + index)->load();
             float gainDb = apvts.getRawParameterValue("Gain" + index)->load();
@@ -286,6 +288,7 @@ public:
             float y = juce::jmap(gainDb, minDb, maxDb, bounds.getBottom(), bounds.getY());
             g.setColour(quasar::colours::labelBackground);
             const int pointSize = 14;
+            const int highLightPointSize = pointSize * 2;
             g.fillEllipse(x - (pointSize >> 1), y - pointSize * 0.5f, pointSize, pointSize);
             g.setColour(quasar::colours::staticText);
             g.drawEllipse(x - (pointSize >> 1), y - pointSize * 0.5f, pointSize, pointSize, 1.5f);
@@ -295,6 +298,11 @@ public:
             const int textWidth = g.getCurrentFont().getStringWidth(bandNumber);
             juce::Rectangle<int> textBounds(juce::roundToInt(x - textWidth * 0.5f), y - 6, textWidth, textHeight);
             g.drawText(bandNumber, textBounds, juce::Justification::centred, false);
+            if (isHighLighted)
+            {
+                g.setColour(quasar::colours::enabled);
+                g.drawEllipse(x - highLightPointSize * 0.5f, y - highLightPointSize * 0.5f, highLightPointSize, highLightPointSize, 1.5f);
+            }
         }
     };
 
@@ -309,6 +317,16 @@ public:
             if (auto* p2 = audioProcessor.apvts.getParameter("Gain" + index)) p2->beginChangeGesture();
         }
     }
+
+    void mouseMove(const juce::MouseEvent& e) override
+    {
+        mouseOverBand = getClosestBand(e.position);
+    }
+    void mouseExit(const juce::MouseEvent& e) override
+    {
+        mouseOverBand = -1;
+    }
+
     void mouseDrag(const juce::MouseEvent& e) override
     {
         if (draggingBand != -1)
@@ -350,6 +368,7 @@ public:
 private:
 
     int draggingBand = -1;
+    int mouseOverBand = -1;
     int getClosestBand(juce::Point<float> mousePos)
     {
         auto bounds = getCurveArea().toFloat();
