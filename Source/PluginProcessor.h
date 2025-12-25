@@ -3,10 +3,36 @@
 #include <JuceHeader.h>
 #include "QFifo.h"
 
+
+
 class QuasarEQAudioProcessor: public juce::AudioProcessor, public juce::ChangeBroadcaster, public juce::AudioProcessorValueTreeState::Listener
 {
 public:
-    QuasarEQAudioProcessor();
+    QuasarEQAudioProcessor()
+#ifndef JucePlugin_PreferredChannelConfigurations
+        : AudioProcessor(BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+            .withInput("Input", juce::AudioChannelSet::stereo(), true)
+#endif
+            .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+#endif
+        )
+#endif
+        , apvts(*this, nullptr, "Parameters", createParameterLayout())
+    {
+        apvts.addParameterListener("outGain", this);
+        apvts.addParameterListener("bypass", this);
+        const juce::StringArray bandParamPrefixes = {"Freq", "Gain", "Q", "Type"};
+        for (int i = 0; i < NUM_BANDS; ++i)
+        {
+            const juce::String index = juce::String (i + 1);
+            for (const auto& prefix : bandParamPrefixes)
+            {
+                apvts.addParameterListener (prefix + index, this);
+            }
+        }
+    }
     void prepareToPlay(double sampleRate, int samplesPerBlock) override
     {
         juce::dsp::ProcessSpec spec {};
@@ -22,9 +48,24 @@ public:
         updateFilters();
     }
 
-    void releaseResources() override;
 #ifndef JucePlugin_PreferredChannelConfigurations
-    bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
+    bool isBusesLayoutSupported(const BusesLayout& layouts) const
+    {
+        if constexpr (JucePlugin_IsMidiEffect)
+        {
+            return true;
+        }
+        const auto mainOutput = layouts.getMainOutputChannelSet();
+        if (mainOutput != juce::AudioChannelSet::mono() && mainOutput != juce::AudioChannelSet::stereo())
+        {
+            return false;
+        }
+        if constexpr (!JucePlugin_IsSynth)
+        {
+            return mainOutput == layouts.getMainInputChannelSet();
+        }
+        return true;
+    }
 #endif
     void processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) override
     {
@@ -46,18 +87,23 @@ public:
         leftChannelFifo.update(buffer);
         rightChannelFifo.update(buffer);
     }
+
+
+    int getNumPrograms() override { return 1; }
+    int getCurrentProgram() override { return 0; }
+    bool hasEditor() const override { return true; }
+    bool acceptsMidi() const override { return JucePlugin_WantsMidiInput; };
+    bool isMidiEffect() const override { return JucePlugin_IsMidiEffect; };
+    bool producesMidi() const override { return JucePlugin_ProducesMidiOutput; };
+    void releaseResources() override {};
+    void setCurrentProgram(int index) override {};
+    void changeProgramName(int index, const juce::String& newName) override {};
+    double getTailLengthSeconds() const override { return 0.0; };
+    const juce::String getName() const override { return JucePlugin_Name; }
+    const juce::String getProgramName(int index) override { return {}; }
+
     juce::AudioProcessorEditor* createEditor() override;
-    bool hasEditor() const override;
-    const juce::String getName() const override;
-    bool acceptsMidi() const override;
-    bool producesMidi() const override;
-    bool isMidiEffect() const override;
-    double getTailLengthSeconds() const override;
-    int getNumPrograms() override;
-    int getCurrentProgram() override;
-    void setCurrentProgram(int index) override;
-    const juce::String getProgramName(int index) override;
-    void changeProgramName(int index, const juce::String& newName) override;
+
     void getStateInformation(juce::MemoryBlock& destData) override
     {
         juce::MemoryOutputStream stream(destData, false);
