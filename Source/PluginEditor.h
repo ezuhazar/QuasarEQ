@@ -329,16 +329,22 @@ public:
     void mouseWheelMove(const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel) override
     {
         const int bandIdx = getClosestBand(e.position);
-        if (bandIdx != -1)
+        if (bandIdx == -1) return;
+        const juce::String index = juce::String(bandIdx + 1);
+        const juce::String paramID = "Q" + index;
+        if (auto* qParam = audioProcessor.apvts.getParameter(paramID))
         {
-            const juce::String index = juce::String(bandIdx + 1);
-            const juce::String paramID = "Q" + index;
-            if (auto* qParam = audioProcessor.apvts.getParameter(paramID))
+            float currentRealValue = audioProcessor.apvts.getRawParameterValue(paramID)->load();
+            float currentNormalized = qParam->getValue();
+            float newNormalized = juce::jlimit(0.0f, 1.0f, currentNormalized + (wheel.deltaY * 0.05f));
+            auto range = audioProcessor.apvts.getParameterRange(paramID);
+            float newRealValue = range.snapToLegalValue(range.convertFrom0to1(newNormalized));
+            if (newRealValue == currentRealValue && wheel.deltaY != 0)
             {
-                float currentValue = qParam->getValue();
-                float newValue = currentValue + (wheel.deltaY * 0.2f);
-                qParam->setValueNotifyingHost(juce::jlimit(0.0f, 1.0f, newValue));
+                float direction = (wheel.deltaY > 0) ? 1.0f : -1.0f;
+                newRealValue = currentRealValue + (0.001f * direction);
             }
+            qParam->setValueNotifyingHost(range.convertTo0to1(newRealValue));
         }
     }
 private:
@@ -553,7 +559,7 @@ private:
     static constexpr int FONT_HEIGHT = HALF_FONT_HEIGHT * 2;
     static constexpr int margin = 10;
     static constexpr int THREAD_SLEEP_TIME = 20;
-	const std::vector<float> gridMarkers = {20.0f, 50.0f, 100.0f, 200.0f, 500.0f, 1000.0f, 2000.0f, 5000.0f, 10000.0f, 20000.0f};
+    const std::vector<float> gridMarkers = {20.0f, 50.0f, 100.0f, 200.0f, 500.0f, 1000.0f, 2000.0f, 5000.0f, 10000.0f, 20000.0f};
     const std::vector<juce::String> dbTags = {"+24", "+18", "+12", "+6", "0", "-6", "-12", "-18", "-24"};
     const std::vector<juce::String> meterTags = {"+6", "+3", "0", "-3", "-6", "-9", "-12", "-15", "-18"};
     QuasarEQAudioProcessor& audioProcessor;
