@@ -336,7 +336,7 @@ public:
         {
             float currentRealValue = audioProcessor.apvts.getRawParameterValue(paramID)->load();
             float currentNormalized = qParam->getValue();
-            float newNormalized = juce::jlimit(0.0f, 1.0f, currentNormalized + (wheel.deltaY * 0.05f));
+            float newNormalized = juce::jlimit(0.0f, 1.0f, currentNormalized + (wheel.deltaY * 0.1f));
             auto range = audioProcessor.apvts.getParameterRange(paramID);
             float newRealValue = range.snapToLegalValue(range.convertFrom0to1(newNormalized));
             if (newRealValue == currentRealValue && wheel.deltaY != 0)
