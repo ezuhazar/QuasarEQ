@@ -326,6 +326,21 @@ public:
             draggingBand = -1;
         }
     }
+    void mouseWheelMove(const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel) override
+    {
+        const int bandIdx = getClosestBand(e.position);
+        if (bandIdx != -1)
+        {
+            const juce::String index = juce::String(bandIdx + 1);
+            const juce::String paramID = "Q" + index;
+            if (auto* qParam = audioProcessor.apvts.getParameter(paramID))
+            {
+                float currentValue = qParam->getValue();
+                float newValue = currentValue + (wheel.deltaY * 0.2f);
+                qParam->setValueNotifyingHost(juce::jlimit(0.0f, 1.0f, newValue));
+            }
+        }
+    }
 private:
 
     int draggingBand = -1;
