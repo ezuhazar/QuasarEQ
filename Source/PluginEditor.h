@@ -609,8 +609,6 @@ public:
     }
 };
 
-
-
 class QuasarEQAudioProcessorEditor: public juce::AudioProcessorEditor
 {
 public:
