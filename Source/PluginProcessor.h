@@ -7,12 +7,45 @@ class QuasarEQAudioProcessor: public juce::AudioProcessor, public juce::ChangeBr
 {
 public:
     QuasarEQAudioProcessor();
-    void prepareToPlay(double sampleRate, int samplesPerBlock) override;
+    void prepareToPlay(double sampleRate, int samplesPerBlock) override
+    {
+        juce::dsp::ProcessSpec spec {};
+        spec.sampleRate = sampleRate;
+        spec.maximumBlockSize = (juce::uint32)samplesPerBlock;
+        spec.numChannels = (juce::uint32)getTotalNumOutputChannels();
+        leftChannelFifo.prepare(samplesPerBlock);
+        rightChannelFifo.prepare(samplesPerBlock);
+        filterChain.prepare(spec);
+        filterChain.reset();
+        outGain.prepare(spec);
+        outGain.reset();
+        updateFilters();
+    }
+
     void releaseResources() override;
 #ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
 #endif
-    void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+    void processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) override
+    {
+        juce::ScopedNoDenormals noDenormals;
+        auto totalNumInputChannels = getTotalNumInputChannels();
+        auto totalNumOutputChannels = getTotalNumOutputChannels();
+        for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+        {
+            buffer.clear(i, 0, buffer.getNumSamples());
+        }
+        if (parametersChanged.load())
+        {
+            updateFilters();
+        }
+        juce::dsp::AudioBlock<float> block(buffer);
+        juce::dsp::ProcessContextReplacing<float> context(block);
+        filterChain.process(context);
+        outGain.process(context);
+        leftChannelFifo.update(buffer);
+        rightChannelFifo.update(buffer);
+    }
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
     const juce::String getName() const override;
@@ -25,8 +58,19 @@ public:
     void setCurrentProgram(int index) override;
     const juce::String getProgramName(int index) override;
     void changeProgramName(int index, const juce::String& newName) override;
-    void getStateInformation(juce::MemoryBlock& destData) override;
-    void setStateInformation(const void* data, int sizeInBytes) override;
+    void getStateInformation(juce::MemoryBlock& destData) override
+    {
+        juce::MemoryOutputStream stream(destData, false);
+        apvts.state.writeToStream(stream);
+    };
+    void setStateInformation(const void* data, int sizeInBytes) override
+    {
+        auto tree = juce::ValueTree::readFromData(data, size_t(sizeInBytes));
+        if (tree.isValid())
+        {
+            apvts.replaceState(tree);
+        }
+    };
 
     using T = float;
 
@@ -34,41 +78,8 @@ public:
     SingleChannelSampleFifo rightChannelFifo {Channel::Right};
     juce::AudioProcessorValueTreeState apvts;
     static constexpr int NUM_BANDS = 8;
-    void parameterChanged(const juce::String& parameterID, float newValue);
+    void parameterChanged(const juce::String& parameterID, float newValue) { parametersChanged.store(true); };
 
-    using CoefPtrArray = std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS>;
-
-    std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> getSharedCoefficients() const
-    {
-        juce::ScopedLock lock (coefficientsLock);
-        return sharedCoefficients;
-    }
-    ;
-private:
-    static constexpr float MIN_FREQ = 20.0f;
-    static constexpr float MAX_FREQ = 20000.0f;
-    static constexpr float MIN_GAIN = -24.0f;
-    static constexpr float MAX_GAIN = 24.0f;
-    static constexpr float MIN_Q = 0.05f;
-    static constexpr float MAX_Q = 12.0f;
-    static constexpr float GAIN_INTERVAL = 0.01f;
-    static constexpr float FREQ_INTERVAL = 0.1f;
-    static constexpr float Q_INTERVAL = 0.001f;
-
-    std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> coefsBuffer;
-    std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> sharedCoefficients;
-    std::atomic<bool> parametersChanged {true};
-    void updateFilters();
-    template <typename T, size_t N, typename... Args> struct RepeatTypeHelper: RepeatTypeHelper<T, N - 1, T, Args...> {};
-    template <typename T, typename... Args> struct RepeatTypeHelper<T, 0, Args...> { using Type = juce::dsp::ProcessorChain<Args...>; };
-    typename RepeatTypeHelper<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>, NUM_BANDS>::Type filterChain;
-    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout() const;
-    juce::CriticalSection coefficientsLock;
-    template <size_t... I>
-    void updateFilterChainCoefficients(const std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS>& newCoefs, bool isBypassed, std::index_sequence<I...>)
-    {
-        ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(isBypassed)), ...);
-    }
 
     template <juce::dsp::IIR::Coefficients<T>::Ptr (*F)(double, T, T, T)>
     static constexpr juce::dsp::IIR::Coefficients<T>::Ptr wrap(double sr, T f, T q, T g) { return F(sr, f, q, g); }
@@ -82,30 +93,78 @@ private:
         wrap<juce::dsp::IIR::Coefficients<T>::makePeakFilter>,
         wrap<juce::dsp::IIR::Coefficients<T>::makeHighShelf>
     };
+private:
+    static constexpr float MIN_FREQ = 20.0f;
+    static constexpr float MAX_FREQ = 20000.0f;
+    static constexpr float MIN_GAIN = -24.0f;
+    static constexpr float MAX_GAIN = 24.0f;
+    static constexpr float MIN_Q = 0.05f;
+    static constexpr float MAX_Q = 12.0f;
+    static constexpr float GAIN_INTERVAL = 0.01f;
+    static constexpr float FREQ_INTERVAL = 0.1f;
+    static constexpr float Q_INTERVAL = 0.001f;
 
-    juce::dsp::ProcessorChain<juce::dsp::Gain<T>> outGain;
-    using Param = std::remove_pointer_t<decltype(std::declval<juce::AudioProcessorValueTreeState>().getRawParameterValue(""))>;
-    Param* outGainParam = nullptr;
-    Param* bypassParam = nullptr;
-    struct BandParamCache
+    std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> coefsBuffer;
+    std::atomic<bool> parametersChanged {true};
+
+    void updateFilters()
     {
-        Param* f = nullptr;
-        Param* g = nullptr;
-        Param* q = nullptr;
-        Param* t = nullptr;
+        const auto sr = getSampleRate();
+        const auto sequence = std::make_index_sequence<NUM_BANDS> {};
+        for (size_t i = 0; i < NUM_BANDS; ++i)
+        {
+            const juce::String idx = juce::String(i + 1);
+            const auto bandF = juce::jmin(apvts.getRawParameterValue("Freq" + idx)->load(), static_cast<float>(sr * 0.49));
+            const auto bandQ = apvts.getRawParameterValue("Q" + idx)->load();
+            const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue("Gain" + idx)->load());
+            const auto bandT = static_cast<int>(apvts.getRawParameterValue("Type" + idx)->load());
+            coefsBuffer[i] = filterFactories[bandT](sr, bandF, bandQ, bandG);
+        }
+        const auto isBypass = static_cast<bool>(apvts.getRawParameterValue("bypass")->load());
+        const auto g = apvts.getRawParameterValue("outGain")->load();
+        outGain.setBypassed<0>(isBypass);
+        outGain.get<0>().setGainDecibels(g);
+        updateFilterChainCoefficients(coefsBuffer, isBypass, sequence);
+        parametersChanged.store(false);
     };
-    std::array<BandParamCache, NUM_BANDS> bandParams;
-    template <std::size_t... Is>
-    void updateAllBands(const double sr, std::index_sequence<Is...>)
+
+    template <typename T, size_t N, typename... Args> struct RepeatTypeHelper: RepeatTypeHelper<T, N - 1, T, Args...> {};
+    template <typename T, typename... Args> struct RepeatTypeHelper<T, 0, Args...> { using Type = juce::dsp::ProcessorChain<Args...>; };
+    typename RepeatTypeHelper<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>, NUM_BANDS>::Type filterChain;
+    juce::dsp::ProcessorChain<juce::dsp::Gain<T>> outGain;
+
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout() const
     {
-        (([this, sr](size_t i)
-            {
-                const auto& bandP = bandParams[i];
-                const auto bandF = juce::jmin(bandP.f->load(), static_cast<float>(sr * 0.49));
-                const auto bandQ = bandP.q->load();
-                const auto bandG = juce::Decibels::decibelsToGain(bandP.g->load());
-                const auto bandT = static_cast<int>(bandP.t->load());
-                coefsBuffer[i] = filterFactories[bandT](sr, bandF, bandQ, bandG);
-            }(Is)), ...);
+        const float FREQ_RATIO = std::pow(MAX_FREQ / MIN_FREQ, 1.0 / static_cast<double>(NUM_BANDS + 1));
+        const float CENTRE_GAIN = 0.0f;
+        const float CENTRE_FREQ = std::sqrtf(MIN_FREQ * MAX_FREQ);
+        const float CENTRE_Q = 1.0f / juce::MathConstants<float>::sqrt2;
+        const int DEFAULT_FILTER = 4;
+        const juce::StringArray filterTags {"HighPass", "HighShelf", "LowPass", "LowShelf", "PeakFilter"};
+        juce::NormalisableRange<float> gainRange (MIN_GAIN, MAX_GAIN, GAIN_INTERVAL);
+        juce::NormalisableRange<float> FreqRange (MIN_FREQ, MAX_FREQ, FREQ_INTERVAL);
+        juce::NormalisableRange<float> QRange (MIN_Q, MAX_Q, Q_INTERVAL);
+        FreqRange.setSkewForCentre(CENTRE_FREQ);
+        QRange.setSkewForCentre(CENTRE_Q);
+        juce::AudioProcessorValueTreeState::ParameterLayout layout;
+        layout.add(std::make_unique<juce::AudioParameterFloat>("outGain", "Out Gain", gainRange, CENTRE_GAIN, "dB"));
+        layout.add(std::make_unique<juce::AudioParameterBool>("bypass", "Bypass", false));
+        float currentFrequency = MIN_FREQ;
+        for (int i = 0; i < NUM_BANDS; ++i)
+        {
+            const juce::String index = juce::String(i + 1);
+            currentFrequency *= FREQ_RATIO;
+            layout.add(std::make_unique<juce::AudioParameterFloat>("Freq" + index, "Band " + index + " Freq", FreqRange, currentFrequency, "Hz"));
+            layout.add(std::make_unique<juce::AudioParameterFloat>("Gain" + index, "Band " + index + " Gain", gainRange, CENTRE_GAIN, "dB"));
+            layout.add(std::make_unique<juce::AudioParameterFloat>("Q" + index, "Band " + index + " Q", QRange, CENTRE_Q));
+            layout.add(std::make_unique<juce::AudioParameterChoice>("Type" + index, "Band " + index + " Type", filterTags, DEFAULT_FILTER));
+        }
+        return layout;
+    };
+
+    template <size_t... I>
+    void updateFilterChainCoefficients(const std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS>& newCoefs, bool isBypassed, std::index_sequence<I...>)
+    {
+        ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(isBypassed)), ...);
     }
 };

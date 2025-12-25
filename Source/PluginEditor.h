@@ -187,7 +187,7 @@ private:
     };
 };
 
-class VisualizerComponent: public juce::Component, private juce::AsyncUpdater
+class VisualizerComponent: public juce::Component, private juce::AsyncUpdater, public juce::AudioProcessorValueTreeState::Listener
 {
 public:
     VisualizerComponent(QuasarEQAudioProcessor& p):
@@ -196,6 +196,29 @@ public:
         analyzerThread(pathProducer, *this)
     {
         freqLUT = pathProducer.makeFreqLUT(audioProcessor.getSampleRate(), MIN_HZ, MAX_HZ);
+        for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
+        {
+            const juce::String index = juce::String (i + 1);
+            for (const auto& prefix : bandParamPrefixes)
+            {
+                audioProcessor.apvts.addParameterListener (prefix + index, this);
+            }
+        }
+    };
+    ~VisualizerComponent()
+    {
+        for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
+        {
+            const juce::String index = juce::String (i + 1);
+            for (const auto& prefix : bandParamPrefixes)
+            {
+                audioProcessor.apvts.removeParameterListener (prefix + index, this);
+            }
+        }
+    };
+    void parameterChanged(const juce::String& parameterID, float newValue)
+    {
+        parametersNeedUpdate = true;
     };
     void paint(juce::Graphics& g) override
     {
@@ -275,8 +298,9 @@ public:
             g.drawText(bandNumber, textBounds, juce::Justification::centred, false);
         }
     };
-    bool parametersNeedUpdate = true;
 private:
+    bool parametersNeedUpdate = true;
+    const juce::StringArray bandParamPrefixes = {"Freq", "Gain", "Q", "Type"};
     void handleAsyncUpdate() override
     {
         SpectrumRenderData path;
@@ -398,18 +422,32 @@ private:
         const int curveSize = getCurveArea().getWidth();
         const float minHz = MIN_HZ;
         const float maxHz = MAX_HZ;
-        double sampleRate = audioProcessor.getSampleRate();
+        double sr = audioProcessor.getSampleRate();
         responseCurveMagnitude.clear();
         responseCurveMagnitude.resize(curveSize, 0.0f);
-        auto allCoefficients = audioProcessor.getSharedCoefficients();
+
+
+        using T = float;
+        std::array<juce::dsp::IIR::Coefficients<T>::Ptr, audioProcessor.NUM_BANDS> coefsBuffer;
+		auto& apvts = audioProcessor.apvts;
+        for (size_t i = 0; i < audioProcessor.NUM_BANDS; ++i)
+        {
+            const juce::String idx = juce::String(i + 1);
+            const auto bandF = juce::jmin(apvts.getRawParameterValue("Freq" + idx)->load(), static_cast<float>(sr * 0.49));
+            const auto bandQ = apvts.getRawParameterValue("Q" + idx)->load();
+            const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue("Gain" + idx)->load());
+            const auto bandT = static_cast<int>(apvts.getRawParameterValue("Type" + idx)->load());
+            coefsBuffer[i] = audioProcessor.filterFactories[bandT](sr, bandF, bandQ, bandG);
+        }
+
         for (int i = 0; i < curveSize; ++i)
         {
             float normalizedX = (float)i / (float)(curveSize - 1);
             float freqHz = juce::mapToLog10(normalizedX, minHz, maxHz);
             float totalGainLinear = 1.0f;
-            for (const auto& coefs : allCoefficients)
+            for (const auto& coefs : coefsBuffer)
             {
-                totalGainLinear *= coefs->getMagnitudeForFrequency(freqHz, sampleRate);
+                totalGainLinear *= coefs->getMagnitudeForFrequency(freqHz, sr);
             }
             responseCurveMagnitude[i] = juce::Decibels::gainToDecibels(totalGainLinear);
         }
@@ -438,7 +476,6 @@ private:
     static constexpr int FONT_HEIGHT = HALF_FONT_HEIGHT * 2;
     static constexpr int margin = 10;
     static constexpr int THREAD_SLEEP_TIME = 20;
-
     struct GridMarker
     {
         float frequency;
@@ -456,7 +493,6 @@ private:
         {10000.0f, "10k"},
         {20000.0f, "20k"},
     };
-
     const std::vector<juce::String> dbTags = {
         "+24", "+18", "+12", "+6", "0", "-6", "-12", "-18", "-24"
     };
@@ -705,7 +741,6 @@ public:
 
         if (source == &audioProcessor)
         {
-            visualizerComponent.parametersNeedUpdate = true;
         }
     };
 private:
