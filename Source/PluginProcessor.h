@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 #include "QFifo.h"
 
+const juce::StringArray filterTags {"HighPass", "HighShelf", "LowPass", "LowShelf", "PeakFilter"};
 class QuasarEQAudioProcessor: public juce::AudioProcessor, public juce::AudioProcessorValueTreeState::Listener
 {
 public:
@@ -132,7 +133,6 @@ public:
         wrap<juce::dsp::IIR::Coefficients<T>::makePeakFilter>
     };
 
-    const juce::StringArray filterTags {"HighPass", "HighShelf", "LowPass", "LowShelf", "PeakFilter"};
 private:
     static constexpr float MIN_FREQ = 20.0f;
     static constexpr float MAX_FREQ = 20000.0f;
