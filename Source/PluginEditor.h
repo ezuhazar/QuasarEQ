@@ -703,11 +703,7 @@ private:
         FilterBandControl(juce::AudioProcessorValueTreeState& apvts, int bandIndex)
         {
             typeComboBox.setJustificationType(juce::Justification::centred);
-            typeComboBox.addItem("HPF", 1);
-            typeComboBox.addItem("HSF", 2);
-            typeComboBox.addItem("LPF", 3);
-            typeComboBox.addItem("LSF", 4);
-            typeComboBox.addItem("PF", 5);
+            typeComboBox.addItemList ({"HPF", "HSF", "LPF", "LSF", "PF"}, 1);
             for (auto* s : {&freqSlider, &gainSlider, &qSlider})
             {
                 s->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
