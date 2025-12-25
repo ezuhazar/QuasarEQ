@@ -548,10 +548,10 @@ public:
         setColour(juce::Label::textColourId, quasar::colours::staticText);
         setColour (juce::Label::backgroundWhenEditingColourId, juce::Colours::black);
     }
-    void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override
+    void drawRotarySlider(juce::Graphics& g, int x, int y, int w, int h, float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override
     {
-        auto area = juce::Rectangle<float>(x, y, width, height);
-        auto size = juce::jmin(area.getWidth(), area.getHeight());
+        auto area = juce::Rectangle<float>(x, y, w, h);
+        auto size = juce::jmin(w, h);
         auto sliderBounds = juce::Rectangle<float>(size, size);
         sliderBounds.setCentre(area.getCentre());
         sliderBounds = sliderBounds.reduced(5.0f);
@@ -580,14 +580,12 @@ public:
         pointer.applyTransform(juce::AffineTransform::rotation(toAngle).translated(centerX, centerY));
         g.fillPath(pointer);
     }
-    void drawComboBox(juce::Graphics& g, int width, int height, bool isButtonDown,
-        int buttonX, int buttonY, int buttonW, int buttonH,
-        juce::ComboBox& box) override
+    void drawComboBox(juce::Graphics& g, int w, int h, bool isButtonDown, int buttonX, int buttonY, int buttonW, int buttonH, juce::ComboBox& box) override
     {
-        auto cornerSize = 3.0f;
-        auto bounds = juce::Rectangle<int>(0, 0, width, height).toFloat();
-        g.setColour(quasar::colours::labelBackground);
-        g.fillRoundedRectangle(bounds, cornerSize);
+        const auto color = quasar::colours::labelBackground;
+        const auto bounds = juce::Rectangle<int>(0, 0, w, h).toFloat();
+        g.setColour(color);
+        g.fillRect(bounds);
     }
     void positionComboBoxText(juce::ComboBox& box, juce::Label& label) override
     {
@@ -623,53 +621,7 @@ public:
     }
 };
 
-class FilterBandControl: public juce::Component
-{
-public:
-    FilterBandControl(juce::AudioProcessorValueTreeState& apvts, int bandIndex)
-    {
-        typeComboBox.setJustificationType(juce::Justification::centred);
-        typeComboBox.addItem("HPF", 1);
-        typeComboBox.addItem("HSF", 2);
-        typeComboBox.addItem("LPF", 3);
-        typeComboBox.addItem("LSF", 4);
-        typeComboBox.addItem("PF", 5);
-        for (auto* s : {&freqSlider, &gainSlider, &qSlider})
-        {
-            s->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
-            s->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 20);
-        }
-        for (auto* c : allComponents)
-        {
-            addAndMakeVisible(c);
-        }
-        const juce::String index = juce::String(bandIndex + 1);
-        freqAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Freq" + index, freqSlider);
-        gainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Gain" + index, gainSlider);
-        qAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Q" + index, qSlider);
-        typeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, "Type" + index, typeComboBox);
-    };
-    ~FilterBandControl() override {};
-    void resized() override
-    {
-        auto bounds = getLocalBounds().reduced(6);
-        typeComboBox.setBounds(bounds.removeFromTop(30).reduced(2));
-        int controlHeight = bounds.getHeight() / 3;
-        freqSlider.setBounds(bounds.removeFromTop(controlHeight).reduced(2));
-        gainSlider.setBounds(bounds.removeFromTop(controlHeight).reduced(2));
-        qSlider.setBounds(bounds.reduced(2));
-    };
-private:
-    std::vector<juce::Component*> allComponents {&typeComboBox, &freqSlider, &gainSlider, &qSlider};
-    juce::Slider freqSlider;
-    juce::Slider gainSlider;
-    juce::Slider qSlider;
-    juce::ComboBox typeComboBox;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> freqAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> qAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> typeAttachment;
-};
+
 
 class QuasarEQAudioProcessorEditor: public juce::AudioProcessorEditor
 {
@@ -687,7 +639,6 @@ public:
         pluginInfoLabel.setFont(16.0f);
         gainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
         gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
-        gainSlider.setDoubleClickReturnValue(false, 0.0);
         addAndMakeVisible(visualizerComponent);
         addAndMakeVisible(pluginInfoLabel);
         addAndMakeVisible(gainSlider);
@@ -703,7 +654,7 @@ public:
     void paint(juce::Graphics& g) override
     {
         g.fillAll(BACKGROUND_COLOR);
-    };
+    }
     void resized() override
     {
         const int margin = 6;
@@ -720,8 +671,8 @@ public:
         pluginInfoLabel.setBounds(top.reduced(margin));
         visualizerComponent.setBounds(mid);
         gainSlider.setBounds(bot.removeFromRight(20 * 3).reduced(margin));
-        const int bandWidth = bot.getWidth() / audioProcessor.NUM_BANDS;
-        for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
+        const int bandWidth = bot.getWidth() / bandControls.size();
+        for (int i = 0; i < bandControls.size(); ++i)
         {
             if (bandControls[i])
             {
@@ -730,10 +681,13 @@ public:
         }
     };
 private:
-    class PowerButton: public juce::Button
+    const juce::Colour BACKGROUND_COLOR = juce::Colour(juce::uint8(40), juce::uint8(42), juce::uint8(50));
+    // Forces disabling of the reset-to-default behavior on double-click.
+    class CustomSlider: public juce::Slider { public:void mouseDoubleClick (const juce::MouseEvent& event) override {}; };
+    class CustomButton: public juce::Button
     {
     public:
-        PowerButton(): juce::Button("PowerButton") {};
+        CustomButton(): juce::Button("PowerButton") {};
         void paintButton(juce::Graphics& g, bool isMouseOverButton, bool isButtonDown) override
         {
             g.setColour(getToggleState() ? quasar::colours::enabled : quasar::colours::disabled);
@@ -748,11 +702,57 @@ private:
             setMouseCursor(juce::MouseCursor::NormalCursor);
         };
     };
+    class FilterBandControl: public juce::Component
+    {
+    public:
+        FilterBandControl(juce::AudioProcessorValueTreeState& apvts, int bandIndex)
+        {
+            typeComboBox.setJustificationType(juce::Justification::centred);
+            typeComboBox.addItem("HPF", 1);
+            typeComboBox.addItem("HSF", 2);
+            typeComboBox.addItem("LPF", 3);
+            typeComboBox.addItem("LSF", 4);
+            typeComboBox.addItem("PF", 5);
+            for (auto* s : {&freqSlider, &gainSlider, &qSlider})
+            {
+                s->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+                s->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 20);
+            }
+            for (auto* c : allComponents)
+            {
+                addAndMakeVisible(c);
+            }
+            const juce::String index = juce::String(bandIndex + 1);
+            freqAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Freq" + index, freqSlider);
+            gainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Gain" + index, gainSlider);
+            qAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Q" + index, qSlider);
+            typeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, "Type" + index, typeComboBox);
+        };
+        ~FilterBandControl() override {};
+        void resized() override
+        {
+            auto bounds = getLocalBounds().reduced(6);
+            typeComboBox.setBounds(bounds.removeFromTop(30).reduced(2));
+            int controlHeight = bounds.getHeight() / 3;
+            freqSlider.setBounds(bounds.removeFromTop(controlHeight).reduced(2));
+            gainSlider.setBounds(bounds.removeFromTop(controlHeight).reduced(2));
+            qSlider.setBounds(bounds.reduced(2));
+        };
+    private:
+        std::vector<juce::Component*> allComponents {&typeComboBox, &freqSlider, &gainSlider, &qSlider};
+        juce::Slider freqSlider;
+        juce::Slider gainSlider;
+        juce::Slider qSlider;
+        juce::ComboBox typeComboBox;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> freqAttachment;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainAttachment;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> qAttachment;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> typeAttachment;
+    };
     CustomLNF customLNF;
+    CustomButton bypassButton;
+    CustomSlider gainSlider;
     QuasarEQAudioProcessor& audioProcessor;
-    const juce::Colour BACKGROUND_COLOR = juce::Colour(juce::uint8(40), juce::uint8(42), juce::uint8(50));
-    PowerButton bypassButton;
-    juce::Slider gainSlider;
     VisualizerComponent visualizerComponent;
     juce::Label pluginInfoLabel;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassAttachment;
