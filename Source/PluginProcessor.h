@@ -33,20 +33,6 @@ public:
             }
         }
     }
-    void prepareToPlay(double sampleRate, int samplesPerBlock) override
-    {
-        juce::dsp::ProcessSpec spec {};
-        spec.sampleRate = sampleRate;
-        spec.maximumBlockSize = (juce::uint32)samplesPerBlock;
-        spec.numChannels = (juce::uint32)getTotalNumOutputChannels();
-        leftChannelFifo.prepare(samplesPerBlock);
-        rightChannelFifo.prepare(samplesPerBlock);
-        filterChain.prepare(spec);
-        filterChain.reset();
-        outGain.prepare(spec);
-        outGain.reset();
-        updateFilters();
-    }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported(const BusesLayout& layouts) const
@@ -67,6 +53,20 @@ public:
         return true;
     }
 #endif
+    void prepareToPlay(double sampleRate, int samplesPerBlock) override
+    {
+        juce::dsp::ProcessSpec spec {};
+        spec.sampleRate = sampleRate;
+        spec.maximumBlockSize = (juce::uint32)samplesPerBlock;
+        spec.numChannels = (juce::uint32)getTotalNumOutputChannels();
+        leftChannelFifo.prepare(samplesPerBlock);
+        rightChannelFifo.prepare(samplesPerBlock);
+        filterChain.prepare(spec);
+        filterChain.reset();
+        outGain.prepare(spec);
+        outGain.reset();
+        updateFilters();
+    }
     void processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) override
     {
         juce::ScopedNoDenormals noDenormals;
@@ -87,8 +87,6 @@ public:
         leftChannelFifo.update(buffer);
         rightChannelFifo.update(buffer);
     }
-
-
     int getNumPrograms() override { return 1; }
     int getCurrentProgram() override { return 0; }
     bool hasEditor() const override { return true; }
@@ -101,9 +99,6 @@ public:
     double getTailLengthSeconds() const override { return 0.0; };
     const juce::String getName() const override { return JucePlugin_Name; }
     const juce::String getProgramName(int index) override { return {}; }
-
-    juce::AudioProcessorEditor* createEditor() override;
-
     void getStateInformation(juce::MemoryBlock& destData) override
     {
         juce::MemoryOutputStream stream(destData, false);
@@ -118,14 +113,16 @@ public:
         }
     };
 
+    void parameterChanged(const juce::String& parameterID, float newValue) { parametersChanged.store(true); };
+
+    juce::AudioProcessorEditor* createEditor() override;
+
     using T = float;
 
     SingleChannelSampleFifo leftChannelFifo {Channel::Left};
     SingleChannelSampleFifo rightChannelFifo {Channel::Right};
     juce::AudioProcessorValueTreeState apvts;
     static constexpr int NUM_BANDS = 8;
-    void parameterChanged(const juce::String& parameterID, float newValue) { parametersChanged.store(true); };
-
 
     template <juce::dsp::IIR::Coefficients<T>::Ptr (*F)(double, T, T, T)>
     static constexpr juce::dsp::IIR::Coefficients<T>::Ptr wrap(double sr, T f, T q, T g) { return F(sr, f, q, g); }
@@ -136,8 +133,7 @@ public:
         wrap<juce::dsp::IIR::Coefficients<T>::makeHighShelf>,
         wrap<juce::dsp::IIR::Coefficients<T>::makeLowPass>,
         wrap<juce::dsp::IIR::Coefficients<T>::makeLowShelf>,
-        wrap<juce::dsp::IIR::Coefficients<T>::makePeakFilter>,
-        wrap<juce::dsp::IIR::Coefficients<T>::makeHighShelf>
+        wrap<juce::dsp::IIR::Coefficients<T>::makePeakFilter>
     };
 private:
     static constexpr float MIN_FREQ = 20.0f;
