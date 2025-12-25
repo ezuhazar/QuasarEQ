@@ -20,7 +20,6 @@ public:
         monoBufferL.setSize(1, FFT_SIZE, false, true, true);
         monoBufferR.setSize(1, FFT_SIZE, false, true, true);
         monoAverageBuffer.setSize(1, FFT_SIZE, false, true, true);
-
         peakFallVelocity.assign(RENDER_OUT_SIZE, 0.0f);
         peakHoldDecibels.assign(RENDER_OUT_SIZE, -std::numeric_limits<float>::infinity());
         currentDecibels.assign(RENDER_OUT_SIZE, -std::numeric_limits<float>::infinity());
@@ -249,7 +248,7 @@ public:
             curvePathPeak.lineTo(spectrumPoints.back().x, getCurveArea().toFloat().getBottom());
             curvePathPeak.lineTo(spectrumPoints[0].x, getCurveArea().toFloat().getBottom());
             curvePathPeak.closeSubPath();
-            g.setColour(quasar::colours::audioSignal.withAlpha(0.5f));
+            g.setColour(quasar::colours::audioSignal.withAlpha(0.4f));
             g.fillPath(curvePathPeak);
         }
         if (peakHoldPoints.size() != 0)
@@ -272,7 +271,7 @@ public:
         const float low = -18.0f;
         const int leftY = juce::roundToInt(juce::jmap(localPath.leftDB, low, high, getLevelMeterArea().toFloat().getBottom(), getLevelMeterArea().toFloat().getY()));
         const int rightY = juce::roundToInt(juce::jmap(localPath.rightDB, low, high, getLevelMeterArea().toFloat().getBottom(), getLevelMeterArea().toFloat().getY()));
-        g.setColour(quasar::colours::audioSignal.withAlpha(0.5f));
+        g.setColour(quasar::colours::audioSignal.withAlpha(0.4f));
         g.fillRect(juce::Rectangle<int>::leftTopRightBottom(getLevelMeterArea().getX(), leftY, getLevelMeterArea().getX() + (getLevelMeterArea().getWidth() >> 1), getLevelMeterArea().getBottom()));
         g.fillRect(juce::Rectangle<int>::leftTopRightBottom(getLevelMeterArea().getX() + (getLevelMeterArea().getWidth() >> 1), rightY, getLevelMeterArea().getRight(), getLevelMeterArea().getBottom()));
         auto bounds = getCurveArea().toFloat();
