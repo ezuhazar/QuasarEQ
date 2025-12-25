@@ -3,7 +3,7 @@
 #include <JuceHeader.h>
 #include "QFifo.h"
 
-const juce::StringArray filterTags {"HighPass", "HighShelf", "LowPass", "LowShelf", "PeakFilter"};
+const juce::StringArray filterTags {"HPF", "HSF", "LPF", "LSF", "PF"};
 class QuasarEQAudioProcessor: public juce::AudioProcessor, public juce::AudioProcessorValueTreeState::Listener
 {
 public:
