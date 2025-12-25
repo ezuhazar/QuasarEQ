@@ -362,7 +362,7 @@ private:
         {
             const int stringWidth = g.getCurrentFont().getStringWidth(gridMarkers[i].tag);
             const int labelX = static_cast<int>(std::roundf(gridLUTX[i] - stringWidth * 0.5f));
-            g.drawText(gridMarkers[i].tag, labelX, freqLabelY, stringWidth, FONT_HEIGHT, juce::Justification::centred, false);
+            g.drawText(getGridMarkerLabel(gridMarkers[i].frequency), labelX, freqLabelY, stringWidth, FONT_HEIGHT, juce::Justification::centred, false);
         }
         for (size_t i = 0; i < gridLUTY.size(); ++i)
         {
@@ -532,6 +532,14 @@ private:
         PathProducer& producer;
         VisualizerComponent& responseCurveComponent;
     };
+    std::string getGridMarkerLabel(float value)
+    {
+        if (value < 1000.0f)
+        {
+            return std::to_string(static_cast<int>(value));
+        }
+        return std::to_string(static_cast<int>(value / 1000.0f)) + "k";
+    }
     AnalyzerThread analyzerThread;
     std::vector<float> responseCurveMagnitude;
 };
