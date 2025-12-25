@@ -429,7 +429,7 @@ private:
 
         using T = float;
         std::array<juce::dsp::IIR::Coefficients<T>::Ptr, audioProcessor.NUM_BANDS> coefsBuffer;
-		auto& apvts = audioProcessor.apvts;
+        auto& apvts = audioProcessor.apvts;
         for (size_t i = 0; i < audioProcessor.NUM_BANDS; ++i)
         {
             const juce::String idx = juce::String(i + 1);
