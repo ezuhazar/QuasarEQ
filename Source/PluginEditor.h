@@ -493,12 +493,8 @@ private:
         {10000.0f, "10k"},
         {20000.0f, "20k"},
     };
-    const std::vector<juce::String> dbTags = {
-        "+24", "+18", "+12", "+6", "0", "-6", "-12", "-18", "-24"
-    };
-    const std::vector<juce::String> meterTags = {
-        "+6", "+3", "0", "-3", "-6", "-9", "-12", "-15", "-18"
-    };
+    const std::vector<juce::String> dbTags = {"+24", "+18", "+12", "+6", "0", "-6", "-12", "-18", "-24"};
+    const std::vector<juce::String> meterTags = {"+6", "+3", "0", "-3", "-6", "-9", "-12", "-15", "-18"};
     QuasarEQAudioProcessor& audioProcessor;
     PathProducer pathProducer;
     SpectrumRenderData channelPathToDraw;
@@ -550,13 +546,16 @@ public:
     }
     void drawRotarySlider(juce::Graphics& g, int x, int y, int w, int h, float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override
     {
-        auto area = juce::Rectangle<float>(x, y, w, h);
+        auto center = juce::Rectangle<float>(x, y, w, h).getCentre();
+        auto centerX = center.x;
+        auto centerY = center.y;
+        juce::Path backgroundArc;
+        juce::Path valueArc;
+        juce::Path pointer;
         auto size = juce::jmin(w, h);
         auto sliderBounds = juce::Rectangle<float>(size, size);
-        sliderBounds.setCentre(area.getCentre());
+        sliderBounds.setCentre(center);
         sliderBounds = sliderBounds.reduced(5.0f);
-        auto centerX = sliderBounds.getCentreX();
-        auto centerY = sliderBounds.getCentreY();
         auto radius = sliderBounds.getWidth() / 2.0f;
         auto lineThickness = 3.5f;
         auto toAngle = rotaryStartAngle + sliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
@@ -564,16 +563,13 @@ public:
         g.setColour(quasar::colours::labelBackground);
         auto knobRadius = radius - lineThickness - 2.0f;
         g.fillEllipse(sliderBounds.reduced(lineThickness + 2.0f));
-        juce::Path backgroundArc;
         backgroundArc.addCentredArc(centerX, centerY, radius, radius, 0.0f, rotaryStartAngle, rotaryEndAngle, true);
         g.setColour(quasar::colours::groove.withAlpha(0.3f));
         g.strokePath(backgroundArc, juce::PathStrokeType(lineThickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-        juce::Path valueArc;
         valueArc.addCentredArc(centerX, centerY, radius, radius, 0.0f, centerAngle, toAngle, true);
         g.setColour(quasar::colours::enabled);
         g.strokePath(valueArc, juce::PathStrokeType(lineThickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         g.setColour(juce::Colours::white);
-        juce::Path pointer;
         auto pointerWidth = 2.0f;
         auto pointerLength = 6.0f;
         pointer.addRoundedRectangle(-pointerWidth * 0.5f, -knobRadius, pointerWidth, pointerLength, 1.0f);
@@ -593,11 +589,10 @@ public:
         label.setFont(getComboBoxFont(box));
         label.setJustificationType(juce::Justification::centred);
     }
-    void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
-        float sliderPos, float minSliderPos, float maxSliderPos,
-        const juce::Slider::SliderStyle style, juce::Slider& slider) override
+    void drawLinearSlider(juce::Graphics& g, int x, int y, int w, int h, float sliderPos,
+        float minSliderPos, float maxSliderPos, const juce::Slider::SliderStyle style, juce::Slider& slider) override
     {
-        auto bounds = juce::Rectangle<float>(x, y, width, height).reduced(10.0f, 5.0f);
+        auto bounds = juce::Rectangle<float>(x, y, w, h).reduced(10.0f, 5.0f);
         float trackWidth = 6.0f;
         auto track = bounds.withSizeKeepingCentre(trackWidth, bounds.getHeight());
         g.setColour(juce::Colours::black.withAlpha(0.3f));
