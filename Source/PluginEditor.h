@@ -279,7 +279,6 @@ public:
         const float maxDb = 24.0f;
         for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
         {
-            bool isHighLighted = (mouseOverBand == i && draggingBand == -1);
             juce::String index = juce::String(i + 1);
             float freqHz = apvts.getRawParameterValue("Freq" + index)->load();
             float gainDb = apvts.getRawParameterValue("Gain" + index)->load();
@@ -297,11 +296,6 @@ public:
             const int textWidth = g.getCurrentFont().getStringWidth(bandNumber);
             juce::Rectangle<int> textBounds(juce::roundToInt(x - textWidth * 0.5f), y - 6, textWidth, textHeight);
             g.drawText(bandNumber, textBounds, juce::Justification::centred, false);
-            if (isHighLighted)
-            {
-                g.setColour(quasar::colours::enabled);
-                g.drawEllipse(x - highLightPointSize * 0.5f, y - highLightPointSize * 0.5f, highLightPointSize, highLightPointSize, 1.5f);
-            }
         }
     };
 

@@ -1,6 +1,6 @@
 # Quasar EQ
 
-![Quasar EQ Screenshot](Screenshot-v1.1.2.png)
+![Quasar EQ Screenshot](Screenshot-v1.2.0.png)
 
 This project is an open-source, non-commercial audio plugin.
 The project source code is licensed under the BSD 3-Clause License.
