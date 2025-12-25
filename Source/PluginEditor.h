@@ -3,19 +3,6 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
-namespace quasar
-{
-    namespace colours
-    {
-        const juce::Colour enabled {0xff7391ff};
-        const juce::Colour groove {0xff000000};
-        const juce::Colour disabled {0xff555555};
-        const juce::Colour staticText {0xffd3d3d3};
-        const juce::Colour labelBackground {0xff17171a};
-        const juce::Colour audioSignal {0xff4d76ff};
-    }
-}
-
 struct SpectrumRenderData
 {
     std::vector<float> spectrumPath;
@@ -186,6 +173,19 @@ private:
         }
     };
 };
+
+namespace quasar
+{
+    namespace colours
+    {
+        const juce::Colour enabled {0xff7391ff};
+        const juce::Colour groove {0xff000000};
+        const juce::Colour disabled {0xff555555};
+        const juce::Colour staticText {0xffd3d3d3};
+        const juce::Colour labelBackground {0xff17171a};
+        const juce::Colour audioSignal {0xff4d76ff};
+    }
+}
 
 class VisualizerComponent: public juce::Component, private juce::AsyncUpdater, public juce::AudioProcessorValueTreeState::Listener
 {
@@ -595,9 +595,6 @@ public:
         label.setFont(getComboBoxFont(box));
         label.setJustificationType(juce::Justification::centred);
     }
-    void drawTextEditorOutline(juce::Graphics& g, int width, int height, juce::TextEditor& te) override
-    {
-    }
     void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
         float sliderPos, float minSliderPos, float maxSliderPos,
         const juce::Slider::SliderStyle style, juce::Slider& slider) override
@@ -674,28 +671,25 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> typeAttachment;
 };
 
-class QuasarEQAudioProcessorEditor: public juce::AudioProcessorEditor, public juce::ChangeListener
+class QuasarEQAudioProcessorEditor: public juce::AudioProcessorEditor
 {
 public:
     QuasarEQAudioProcessorEditor(QuasarEQAudioProcessor& p): AudioProcessorEditor(&p), audioProcessor(p), visualizerComponent(p)
     {
         setLookAndFeel(&customLNF);
-        audioProcessor.addChangeListener(this);
-
         for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
         {
             bandControls.push_back(std::make_unique<FilterBandControl>(audioProcessor.apvts, i));
             addAndMakeVisible(*bandControls.back());
         }
-        gainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-        gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
-        addAndMakeVisible(visualizerComponent);
-
         pluginInfoLabel.setText("Quasar EQ v" + juce::String(JucePlugin_VersionString), juce::dontSendNotification);
         pluginInfoLabel.setJustificationType(juce::Justification::centredLeft);
         pluginInfoLabel.setFont(16.0f);
+        gainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+        gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
+        gainSlider.setDoubleClickReturnValue(false, 0.0);
+        addAndMakeVisible(visualizerComponent);
         addAndMakeVisible(pluginInfoLabel);
-
         addAndMakeVisible(gainSlider);
         addAndMakeVisible(bypassButton);
         outGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "outGain", gainSlider);
@@ -705,7 +699,6 @@ public:
     QuasarEQAudioProcessorEditor::~QuasarEQAudioProcessorEditor()
     {
         setLookAndFeel(nullptr);
-        audioProcessor.removeChangeListener(this);
     }
     void paint(juce::Graphics& g) override
     {
@@ -736,16 +729,7 @@ public:
             }
         }
     };
-    void changeListenerCallback(juce::ChangeBroadcaster* source) override
-    {
-    };
 private:
-    class CustomGainSlider: public juce::Slider
-    {
-    public:
-        // Please keep the empty override. I want to disable the double-click parameter reset.
-        void mouseDoubleClick (const juce::MouseEvent& event) override {};
-    };
     class PowerButton: public juce::Button
     {
     public:
@@ -768,7 +752,7 @@ private:
     QuasarEQAudioProcessor& audioProcessor;
     const juce::Colour BACKGROUND_COLOR = juce::Colour(juce::uint8(40), juce::uint8(42), juce::uint8(50));
     PowerButton bypassButton;
-    CustomGainSlider gainSlider;
+    juce::Slider gainSlider;
     VisualizerComponent visualizerComponent;
     juce::Label pluginInfoLabel;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassAttachment;
