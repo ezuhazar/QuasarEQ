@@ -3,7 +3,9 @@
 #include <JuceHeader.h>
 #include "QFifo.h"
 
+const juce::StringArray bandParamPrefixes = {"Freq", "Gain", "Q", "Type"};
 const juce::StringArray filterTags {"HPF", "HSF", "LPF", "LSF", "PF"};
+
 class QuasarEQAudioProcessor: public juce::AudioProcessor, public juce::AudioProcessorValueTreeState::Listener
 {
 public:
@@ -22,7 +24,6 @@ public:
     {
         apvts.addParameterListener("outGain", this);
         apvts.addParameterListener("bypass", this);
-        const juce::StringArray bandParamPrefixes = {"Freq", "Gain", "Q", "Type"};
         for (int i = 0; i < NUM_BANDS; ++i)
         {
             const juce::String index = juce::String (i + 1);

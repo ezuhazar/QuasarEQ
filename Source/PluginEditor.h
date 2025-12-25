@@ -299,7 +299,6 @@ public:
     };
 private:
     bool parametersNeedUpdate = true;
-    const juce::StringArray bandParamPrefixes = {"Freq", "Gain", "Q", "Type"};
     void handleAsyncUpdate() override
     {
         SpectrumRenderData path;
@@ -660,7 +659,6 @@ public:
     };
 private:
     const juce::Colour BACKGROUND_COLOR = juce::Colour(juce::uint8(40), juce::uint8(42), juce::uint8(50));
-    // Forces disabling of the reset-to-default behavior on double-click.
     class CustomSlider: public juce::Slider { public:void mouseDoubleClick (const juce::MouseEvent& event) override {}; };
     class CustomButton: public juce::Button
     {
