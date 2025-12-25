@@ -686,7 +686,7 @@ private:
         FilterBandControl(juce::AudioProcessorValueTreeState& apvts, int bandIndex)
         {
             typeComboBox.setJustificationType(juce::Justification::centred);
-            typeComboBox.addItemList ({"HPF", "HSF", "LPF", "LSF", "PF"}, 1);
+            typeComboBox.addItemList (filterTags, 1);
             for (auto* s : {&freqSlider, &gainSlider, &qSlider})
             {
                 s->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
