@@ -3,9 +3,7 @@
 #include <JuceHeader.h>
 #include "QFifo.h"
 
-
-
-class QuasarEQAudioProcessor: public juce::AudioProcessor, public juce::ChangeBroadcaster, public juce::AudioProcessorValueTreeState::Listener
+class QuasarEQAudioProcessor: public juce::AudioProcessor, public juce::AudioProcessorValueTreeState::Listener
 {
 public:
     QuasarEQAudioProcessor()
@@ -33,7 +31,6 @@ public:
             }
         }
     }
-
 #ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported(const BusesLayout& layouts) const
     {
@@ -112,7 +109,6 @@ public:
             apvts.replaceState(tree);
         }
     };
-
     void parameterChanged(const juce::String& parameterID, float newValue) { parametersChanged.store(true); };
 
     juce::AudioProcessorEditor* createEditor() override;
@@ -152,7 +148,6 @@ private:
     void updateFilters()
     {
         const auto sr = getSampleRate();
-        const auto sequence = std::make_index_sequence<NUM_BANDS> {};
         for (size_t i = 0; i < NUM_BANDS; ++i)
         {
             const juce::String idx = juce::String(i + 1);
@@ -166,9 +161,15 @@ private:
         const auto g = apvts.getRawParameterValue("outGain")->load();
         outGain.setBypassed<0>(isBypass);
         outGain.get<0>().setGainDecibels(g);
-        updateFilterChainCoefficients(coefsBuffer, isBypass, sequence);
+        updateFilterChainCoefficients(coefsBuffer, isBypass, std::make_index_sequence<NUM_BANDS> {});
         parametersChanged.store(false);
     };
+
+    template <size_t... I>
+    void updateFilterChainCoefficients(const std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS>& newCoefs, bool isBypassed, std::index_sequence<I...>)
+    {
+        ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(isBypassed)), ...);
+    }
 
     template <typename T, size_t N, typename... Args> struct RepeatTypeHelper: RepeatTypeHelper<T, N - 1, T, Args...> {};
     template <typename T, typename... Args> struct RepeatTypeHelper<T, 0, Args...> { using Type = juce::dsp::ProcessorChain<Args...>; };
@@ -203,10 +204,4 @@ private:
         }
         return layout;
     };
-
-    template <size_t... I>
-    void updateFilterChainCoefficients(const std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS>& newCoefs, bool isBypassed, std::index_sequence<I...>)
-    {
-        ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(isBypassed)), ...);
-    }
 };
