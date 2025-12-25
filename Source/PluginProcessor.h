@@ -27,13 +27,23 @@ public:
     void changeProgramName(int index, const juce::String& newName) override;
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
+
+    using T = float;
+
     SingleChannelSampleFifo leftChannelFifo {Channel::Left};
     SingleChannelSampleFifo rightChannelFifo {Channel::Right};
     juce::AudioProcessorValueTreeState apvts;
     static constexpr int NUM_BANDS = 8;
     void parameterChanged(const juce::String& parameterID, float newValue);
-    using CoefPtrArray = std::array<juce::dsp::IIR::Coefficients<float>::Ptr, NUM_BANDS>;
-    CoefPtrArray getSharedCoefficients() const;
+
+    using CoefPtrArray = std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS>;
+
+    std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> getSharedCoefficients() const
+    {
+        juce::ScopedLock lock (coefficientsLock);
+        return sharedCoefficients;
+    }
+    ;
 private:
     static constexpr float MIN_FREQ = 20.0f;
     static constexpr float MAX_FREQ = 20000.0f;
@@ -45,8 +55,8 @@ private:
     static constexpr float FREQ_INTERVAL = 0.1f;
     static constexpr float Q_INTERVAL = 0.001f;
 
-    CoefPtrArray coefsBuffer;
-    CoefPtrArray sharedCoefficients;
+    std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> coefsBuffer;
+    std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> sharedCoefficients;
     std::atomic<bool> parametersChanged {true};
     void updateFilters();
     template <typename T, size_t N, typename... Args> struct RepeatTypeHelper: RepeatTypeHelper<T, N - 1, T, Args...> {};
@@ -55,12 +65,11 @@ private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout() const;
     juce::CriticalSection coefficientsLock;
     template <size_t... I>
-    void updateFilterChainCoefficients(const CoefPtrArray& newCoefs, bool isBypassed, std::index_sequence<I...>)
+    void updateFilterChainCoefficients(const std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS>& newCoefs, bool isBypassed, std::index_sequence<I...>)
     {
         ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(isBypassed)), ...);
     }
 
-    using T = float;
     template <juce::dsp::IIR::Coefficients<T>::Ptr (*F)(double, T, T, T)>
     static constexpr juce::dsp::IIR::Coefficients<T>::Ptr wrap(double sr, T f, T q, T g) { return F(sr, f, q, g); }
     template <juce::dsp::IIR::Coefficients<T>::Ptr (*F)(double, T, T)>

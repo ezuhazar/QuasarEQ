@@ -161,8 +161,3 @@ void QuasarEQAudioProcessor::updateFilters()
     sendChangeMessage();
     parametersChanged.store(false);
 }
-QuasarEQAudioProcessor::CoefPtrArray QuasarEQAudioProcessor::getSharedCoefficients() const
-{
-    juce::ScopedLock lock (coefficientsLock);
-    return sharedCoefficients;
-}
