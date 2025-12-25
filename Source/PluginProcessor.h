@@ -45,7 +45,6 @@ private:
     static constexpr float FREQ_INTERVAL = 0.1f;
     static constexpr float Q_INTERVAL = 0.001f;
 
-
     CoefPtrArray coefsBuffer;
     CoefPtrArray sharedCoefficients;
     std::atomic<bool> parametersChanged {true};
@@ -61,27 +60,24 @@ private:
         ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(isBypassed)), ...);
     }
 
-    using NumericType = float;
-    using FilterCoefs = juce::dsp::IIR::Coefficients<NumericType>;
-    using FilterCoefsPtr = FilterCoefs::Ptr;
-    using FilterFactory = FilterCoefsPtr(*)(double, NumericType, NumericType, NumericType);
-    template <FilterCoefsPtr (*F)(double, NumericType, NumericType, NumericType)>
-    static FilterCoefsPtr wrap(double sr, NumericType f, NumericType q, NumericType g) { return F(sr, f, q, g); }
-    template <FilterCoefsPtr (*F)(double, NumericType, NumericType)>
-    static FilterCoefsPtr wrap(double sr, NumericType f, NumericType q, NumericType g) { return F(sr, f, q); }
-    static constexpr FilterFactory filterFactories[] = {
-        wrap<FilterCoefs::makeHighPass>,
-        wrap<FilterCoefs::makeHighShelf>,
-        wrap<FilterCoefs::makeLowPass>,
-        wrap<FilterCoefs::makeLowShelf>,
-        wrap<FilterCoefs::makePeakFilter>,
-        wrap<FilterCoefs::makeHighShelf>
+    using T = float;
+    template <juce::dsp::IIR::Coefficients<T>::Ptr (*F)(double, T, T, T)>
+    static constexpr juce::dsp::IIR::Coefficients<T>::Ptr wrap(double sr, T f, T q, T g) { return F(sr, f, q, g); }
+    template <juce::dsp::IIR::Coefficients<T>::Ptr (*F)(double, T, T)>
+    static constexpr juce::dsp::IIR::Coefficients<T>::Ptr wrap(double sr, T f, T q, T) { return F(sr, f, q); }
+    static constexpr juce::dsp::IIR::Coefficients<T>::Ptr (*filterFactories[])(double, T, T, T) = {
+        wrap<juce::dsp::IIR::Coefficients<T>::makeHighPass>,
+        wrap<juce::dsp::IIR::Coefficients<T>::makeHighShelf>,
+        wrap<juce::dsp::IIR::Coefficients<T>::makeLowPass>,
+        wrap<juce::dsp::IIR::Coefficients<T>::makeLowShelf>,
+        wrap<juce::dsp::IIR::Coefficients<T>::makePeakFilter>,
+        wrap<juce::dsp::IIR::Coefficients<T>::makeHighShelf>
     };
-    juce::dsp::ProcessorChain<juce::dsp::Gain<NumericType>> outGain;
+
+    juce::dsp::ProcessorChain<juce::dsp::Gain<T>> outGain;
     using Param = std::remove_pointer_t<decltype(std::declval<juce::AudioProcessorValueTreeState>().getRawParameterValue(""))>;
     Param* outGainParam = nullptr;
     Param* bypassParam = nullptr;
-
     struct BandParamCache
     {
         Param* f = nullptr;
@@ -90,7 +86,6 @@ private:
         Param* t = nullptr;
     };
     std::array<BandParamCache, NUM_BANDS> bandParams;
-
     template <std::size_t... Is>
     void updateAllBands(const double sr, std::index_sequence<Is...>)
     {
