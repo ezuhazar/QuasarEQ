@@ -297,7 +297,73 @@ public:
             g.drawText(bandNumber, textBounds, juce::Justification::centred, false);
         }
     };
+
+    void mouseDown(const juce::MouseEvent& e) override
+    {
+        draggingBand = getClosestBand(e.position);
+
+        if (draggingBand != -1)
+        {
+            juce::String index = juce::String(draggingBand + 1);
+            if (auto* p1 = audioProcessor.apvts.getParameter("Freq" + index)) p1->beginChangeGesture();
+            if (auto* p2 = audioProcessor.apvts.getParameter("Gain" + index)) p2->beginChangeGesture();
+        }
+    }
+    void mouseDrag(const juce::MouseEvent& e) override
+    {
+        if (draggingBand != -1)
+        {
+            updateParamsFromMouse(e.position);
+        }
+    }
+    void mouseUp(const juce::MouseEvent& e) override
+    {
+        if (draggingBand != -1)
+        {
+            juce::String index = juce::String(draggingBand + 1);
+            if (auto* p1 = audioProcessor.apvts.getParameter("Freq" + index)) p1->endChangeGesture();
+            if (auto* p2 = audioProcessor.apvts.getParameter("Gain" + index)) p2->endChangeGesture();
+            draggingBand = -1;
+        }
+    }
 private:
+
+    int draggingBand = -1;
+    int getClosestBand(juce::Point<float> mousePos)
+    {
+        auto bounds = getCurveArea().toFloat();
+        const float minDb = -24.0f;
+        const float maxDb = 24.0f;
+        const float tolerance = 15.0f;
+        for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
+        {
+            juce::String index = juce::String(i + 1);
+            float freqHz = audioProcessor.apvts.getRawParameterValue("Freq" + index)->load();
+            float gainDb = audioProcessor.apvts.getRawParameterValue("Gain" + index)->load();
+            float x = bounds.getX() + bounds.getWidth() * juce::mapFromLog10(freqHz, MIN_HZ, MAX_HZ);
+            float y = juce::jmap(gainDb, minDb, maxDb, bounds.getBottom(), bounds.getY());
+            if (mousePos.getDistanceSquaredFrom({x, y}) < tolerance * tolerance)
+                return i;
+        }
+        return -1;
+    }
+    void updateParamsFromMouse(juce::Point<float> mousePos)
+    {
+        if (draggingBand == -1) return;
+        auto bounds = getCurveArea().toFloat();
+        const float minDb = -24.0f;
+        const float maxDb = 24.0f;
+        float normalizedX = (mousePos.getX() - bounds.getX()) / bounds.getWidth();
+        float freqHz = juce::mapToLog10(juce::jlimit(0.0f, 1.0f, normalizedX), MIN_HZ, MAX_HZ);
+        float gainDb = juce::jmap(mousePos.getY(), bounds.getBottom(), bounds.getY(), minDb, maxDb);
+        gainDb = juce::jlimit(minDb, maxDb, gainDb);
+        juce::String index = juce::String(draggingBand + 1);
+        if (auto* freqParam = audioProcessor.apvts.getParameter("Freq" + index))
+            freqParam->setValueNotifyingHost(audioProcessor.apvts.getParameterRange("Freq" + index).convertTo0to1(freqHz));
+        if (auto* gainParam = audioProcessor.apvts.getParameter("Gain" + index))
+            gainParam->setValueNotifyingHost(audioProcessor.apvts.getParameterRange("Gain" + index).convertTo0to1(gainDb));
+    }
+
     bool parametersNeedUpdate = true;
     void handleAsyncUpdate() override
     {
