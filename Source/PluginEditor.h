@@ -425,8 +425,6 @@ private:
         double sr = audioProcessor.getSampleRate();
         responseCurveMagnitude.clear();
         responseCurveMagnitude.resize(curveSize, 0.0f);
-
-
         using T = float;
         std::array<juce::dsp::IIR::Coefficients<T>::Ptr, audioProcessor.NUM_BANDS> coefsBuffer;
         auto& apvts = audioProcessor.apvts;
@@ -439,7 +437,6 @@ private:
             const auto bandT = static_cast<int>(apvts.getRawParameterValue("Type" + idx)->load());
             coefsBuffer[i] = audioProcessor.filterFactories[bandT](sr, bandF, bandQ, bandG);
         }
-
         for (int i = 0; i < curveSize; ++i)
         {
             float normalizedX = (float)i / (float)(curveSize - 1);
