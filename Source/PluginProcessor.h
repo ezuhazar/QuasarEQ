@@ -131,6 +131,8 @@ public:
         wrap<juce::dsp::IIR::Coefficients<T>::makeLowShelf>,
         wrap<juce::dsp::IIR::Coefficients<T>::makePeakFilter>
     };
+
+    const juce::StringArray filterTags {"HighPass", "HighShelf", "LowPass", "LowShelf", "PeakFilter"};
 private:
     static constexpr float MIN_FREQ = 20.0f;
     static constexpr float MAX_FREQ = 20000.0f;
@@ -183,7 +185,6 @@ private:
         const float CENTRE_FREQ = std::sqrtf(MIN_FREQ * MAX_FREQ);
         const float CENTRE_Q = 1.0f / juce::MathConstants<float>::sqrt2;
         const int DEFAULT_FILTER = 4;
-        const juce::StringArray filterTags {"HighPass", "HighShelf", "LowPass", "LowShelf", "PeakFilter"};
         juce::NormalisableRange<float> gainRange (MIN_GAIN, MAX_GAIN, GAIN_INTERVAL);
         juce::NormalisableRange<float> FreqRange (MIN_FREQ, MAX_FREQ, FREQ_INTERVAL);
         juce::NormalisableRange<float> QRange (MIN_Q, MAX_Q, Q_INTERVAL);
