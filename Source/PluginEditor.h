@@ -738,10 +738,6 @@ public:
     };
     void changeListenerCallback(juce::ChangeBroadcaster* source) override
     {
-
-        if (source == &audioProcessor)
-        {
-        }
     };
 private:
     class CustomGainSlider: public juce::Slider
