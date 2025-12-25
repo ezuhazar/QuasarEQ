@@ -280,7 +280,6 @@ public:
         for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
         {
             bool isHighLighted = (mouseOverBand == i && draggingBand == -1);
-            bool isHighLighted = (mouseOverBand == i && draggingBand == -1);
             juce::String index = juce::String(i + 1);
             float freqHz = apvts.getRawParameterValue("Freq" + index)->load();
             float gainDb = apvts.getRawParameterValue("Gain" + index)->load();
