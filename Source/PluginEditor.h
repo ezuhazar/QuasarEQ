@@ -248,7 +248,7 @@ public:
             curvePathPeak.lineTo(spectrumPoints.back().x, getCurveArea().toFloat().getBottom());
             curvePathPeak.lineTo(spectrumPoints[0].x, getCurveArea().toFloat().getBottom());
             curvePathPeak.closeSubPath();
-            g.setColour(quasar::colours::audioSignal.withAlpha(0.4f));
+            g.setColour(quasar::colours::audioSignal.withAlpha(0.45f));
             g.fillPath(curvePathPeak);
         }
         if (peakHoldPoints.size() != 0)
@@ -271,7 +271,7 @@ public:
         const float low = -18.0f;
         const int leftY = juce::roundToInt(juce::jmap(localPath.leftDB, low, high, getLevelMeterArea().toFloat().getBottom(), getLevelMeterArea().toFloat().getY()));
         const int rightY = juce::roundToInt(juce::jmap(localPath.rightDB, low, high, getLevelMeterArea().toFloat().getBottom(), getLevelMeterArea().toFloat().getY()));
-        g.setColour(quasar::colours::audioSignal.withAlpha(0.4f));
+        g.setColour(quasar::colours::audioSignal.withAlpha(0.45f));
         g.fillRect(juce::Rectangle<int>::leftTopRightBottom(getLevelMeterArea().getX(), leftY, getLevelMeterArea().getX() + (getLevelMeterArea().getWidth() >> 1), getLevelMeterArea().getBottom()));
         g.fillRect(juce::Rectangle<int>::leftTopRightBottom(getLevelMeterArea().getX() + (getLevelMeterArea().getWidth() >> 1), rightY, getLevelMeterArea().getRight(), getLevelMeterArea().getBottom()));
         auto bounds = getCurveArea().toFloat();
@@ -518,11 +518,7 @@ private:
     };
     std::string getGridMarkerLabel(float value)
     {
-        if (value < 1000.0f)
-        {
-            return std::to_string(static_cast<int>(value));
-        }
-        return std::to_string(static_cast<int>(value / 1000.0f)) + "k";
+        return  value < 1000.0f ? std::to_string(static_cast<int>(value)) : std::to_string(static_cast<int>(value / 1000.0f)) + "k";
     }
     AnalyzerThread analyzerThread;
     std::vector<float> responseCurveMagnitude;
