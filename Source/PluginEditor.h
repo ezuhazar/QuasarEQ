@@ -263,7 +263,7 @@ public:
         g.strokePath(responseCurvePath, juce::PathStrokeType(2.5f));
         if (!isBypass)
         {
-            g.setFillType(juce::FillType(quasar::colours::audioSignal.withAlpha(0.25f)));
+            g.setFillType(juce::FillType(quasar::colours::audioSignal.withAlpha(0.3f)));
             g.fillPath(responseCurvePath);
         }
         g.restoreState();
@@ -367,7 +367,7 @@ private:
         auto bounds = getCurveArea().toFloat();
         const float minDb = -24.0f;
         const float maxDb = 24.0f;
-        const float tolerance = 7.75f;
+        const float tolerance = 8.0f;
         for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
         {
             juce::String index = juce::String(i + 1);
