@@ -16,7 +16,7 @@ static inline const juce::String NAME_PREFIX_GAIN {"Gain"};
 static inline const juce::String NAME_PREFIX_Q {"Q"};
 static inline const juce::String NAME_PREFIX_TYPE {"Type"};
 static inline const juce::String NAME_PREFIX_BYPASS {"Bypass"};
-static inline const juce::String NAME_PREFIX_BAND {"Band "};
+static inline const juce::String NAME_PREFIX_BAND {"Band"};
 static inline const juce::String UNIT_HZ {"Hz"};
 static inline const juce::String UNIT_DB {"dB"};
 static inline const juce::StringArray filterTags {"HighPass", "HighShelf", "LowPass", "LowShelf", "Peak"};
