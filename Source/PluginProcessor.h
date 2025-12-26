@@ -1,7 +1,6 @@
 #pragma once
 #include <JuceHeader.h>
 #include "QFifo.h"
-
 static inline const juce::String ID_BYPASS {"bypass"};
 static inline const juce::String ID_GAIN {"outGain"};
 static inline const juce::String PREFIX_FREQ {"Freq"};
@@ -11,10 +10,8 @@ static inline const juce::String PREFIX_TYPE {"Type"};
 static inline const juce::String PREFIX_BYPASS {"Bypass"};
 static inline const juce::StringArray filterTags {"HighPass", "HighShelf", "LowPass", "LowShelf", "Peak"};
 static inline const juce::StringArray bandParamPrefixes = {PREFIX_FREQ, PREFIX_GAIN, PREFIX_Q, PREFIX_TYPE, PREFIX_BYPASS};
-
 static constexpr int NUM_BANDS = 8;
 using T = float;
-
 template <juce::dsp::IIR::Coefficients<T>::Ptr (*F)(double, T, T, T)>
 static constexpr juce::dsp::IIR::Coefficients<T>::Ptr wrap(double sr, T f, T q, T g) { return F(sr, f, q, g); }
 template <juce::dsp::IIR::Coefficients<T>::Ptr (*F)(double, T, T)>
@@ -140,10 +137,6 @@ public:
     SingleChannelSampleFifo rightChannelFifo {Channel::Right};
     juce::AudioProcessorValueTreeState apvts;
 private:
-
-
-
-
     std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> coefsBuffer;
     std::array<bool, NUM_BANDS> bandBypassStates;
     std::atomic<bool> parametersChanged {true};
