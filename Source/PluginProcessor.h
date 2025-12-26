@@ -3,13 +3,23 @@
 #include "QFifo.h"
 static inline const juce::String ID_BYPASS {"bypass"};
 static inline const juce::String ID_GAIN {"outGain"};
-static inline const juce::String PREFIX_FREQ {"Freq"};
-static inline const juce::String PREFIX_GAIN {"Gain"};
-static inline const juce::String PREFIX_Q {"Q"};
-static inline const juce::String PREFIX_TYPE {"Type"};
-static inline const juce::String PREFIX_BYPASS {"Bypass"};
+static inline const juce::String ID_PREFIX_FREQ {"Freq"};
+static inline const juce::String ID_PREFIX_GAIN {"Gain"};
+static inline const juce::String ID_PREFIX_Q {"Q"};
+static inline const juce::String ID_PREFIX_TYPE {"Type"};
+static inline const juce::String ID_PREFIX_BYPASS {"Bypass"};
+static inline const juce::String NAME_BYPASS {"Bypass"};
+static inline const juce::String NAME_GAIN {"Out Gain"};
+static inline const juce::String NAME_PREFIX_FREQ {"Freq"};
+static inline const juce::String NAME_PREFIX_GAIN {"Gain"};
+static inline const juce::String NAME_PREFIX_Q {"Q"};
+static inline const juce::String NAME_PREFIX_TYPE {"Type"};
+static inline const juce::String NAME_PREFIX_BYPASS {"Bypass"};
+static inline const juce::String NAME_PREFIX_BAND {"Band "};
+static inline const juce::String UNIT_HZ {"Hz"};
+static inline const juce::String UNIT_DB {"dB"};
 static inline const juce::StringArray filterTags {"HighPass", "HighShelf", "LowPass", "LowShelf", "Peak"};
-static inline const juce::StringArray bandParamPrefixes = {PREFIX_FREQ, PREFIX_GAIN, PREFIX_Q, PREFIX_TYPE, PREFIX_BYPASS};
+static inline const juce::StringArray bandParamPrefixes = {ID_PREFIX_FREQ, ID_PREFIX_GAIN, ID_PREFIX_Q, ID_PREFIX_TYPE, ID_PREFIX_BYPASS};
 static constexpr int NUM_BANDS = 8;
 using T = float;
 template <juce::dsp::IIR::Coefficients<T>::Ptr (*F)(double, T, T, T)>
@@ -147,12 +157,12 @@ private:
         for (size_t i = 0; i < NUM_BANDS; ++i)
         {
             const juce::String idx = juce::String(i + 1);
-            const auto bandF = juce::jmin(apvts.getRawParameterValue(PREFIX_FREQ + idx)->load(), static_cast<float>(sr * 0.49));
-            const auto bandQ = apvts.getRawParameterValue(PREFIX_Q + idx)->load();
-            const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue(PREFIX_GAIN + idx)->load());
-            const auto bandT = static_cast<int>(apvts.getRawParameterValue(PREFIX_TYPE + idx)->load());
+            const auto bandF = juce::jmin(apvts.getRawParameterValue(ID_PREFIX_FREQ + idx)->load(), static_cast<float>(sr * 0.49));
+            const auto bandQ = apvts.getRawParameterValue(ID_PREFIX_Q + idx)->load();
+            const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue(ID_PREFIX_GAIN + idx)->load());
+            const auto bandT = static_cast<int>(apvts.getRawParameterValue(ID_PREFIX_TYPE + idx)->load());
             coefsBuffer[i] = filterFactories[bandT](sr, bandF, bandQ, bandG);
-            const bool individualBypass = static_cast<bool>(apvts.getRawParameterValue(PREFIX_BYPASS + idx)->load());
+            const bool individualBypass = static_cast<bool>(apvts.getRawParameterValue(ID_PREFIX_BYPASS + idx)->load());
             bandBypassStates[i] = globalBypass || individualBypass;
         }
         const auto g = apvts.getRawParameterValue(ID_GAIN)->load();
@@ -192,17 +202,17 @@ private:
         freqRange.setSkewForCentre(freqRange.snapToLegalValue(FREQ_CENTRE));
         qualRange.setSkewForCentre(qualRange.snapToLegalValue(QUAL_CENTRE));
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(std::make_unique<juce::AudioParameterBool>(ID_BYPASS, "Bypass", false));
-        layout.add(std::make_unique<juce::AudioParameterFloat>(ID_GAIN, "Out Gain", gainRange, GAIN_CENTRE, "dB"));
+        layout.add(std::make_unique<juce::AudioParameterBool>(ID_BYPASS, NAME_BYPASS, false));
+        layout.add(std::make_unique<juce::AudioParameterFloat>(ID_GAIN, NAME_GAIN, gainRange, GAIN_CENTRE, UNIT_DB));
         const int DEFAULT_FILTER = 4;
         for (int i = 0; i < NUM_BANDS; ++i)
         {
             const juce::String index = juce::String(i + 1);
-            layout.add(std::make_unique<juce::AudioParameterBool>(PREFIX_BYPASS + index, "Band " + index + " Bypass", false));
-            layout.add(std::make_unique<juce::AudioParameterFloat>(PREFIX_FREQ + index, "Band " + index + " Freq", freqRange, freqRange.snapToLegalValue(FREQ_CENTRE), "Hz"));
-            layout.add(std::make_unique<juce::AudioParameterFloat>(PREFIX_GAIN + index, "Band " + index + " Gain", gainRange, GAIN_CENTRE, "dB"));
-            layout.add(std::make_unique<juce::AudioParameterFloat>(PREFIX_Q + index, "Band " + index + " Q", qualRange, qualRange.snapToLegalValue(QUAL_CENTRE)));
-            layout.add(std::make_unique<juce::AudioParameterChoice>(PREFIX_TYPE + index, "Band " + index + " Type", filterTags, DEFAULT_FILTER));
+            layout.add(std::make_unique<juce::AudioParameterBool>(ID_PREFIX_BYPASS + index, NAME_PREFIX_BAND + index + NAME_PREFIX_BYPASS, false));
+            layout.add(std::make_unique<juce::AudioParameterFloat>(ID_PREFIX_FREQ + index, NAME_PREFIX_BAND + index + NAME_PREFIX_FREQ, freqRange, freqRange.snapToLegalValue(FREQ_CENTRE), UNIT_HZ));
+            layout.add(std::make_unique<juce::AudioParameterFloat>(ID_PREFIX_GAIN + index, NAME_PREFIX_BAND + index + NAME_PREFIX_GAIN, gainRange, GAIN_CENTRE, UNIT_DB));
+            layout.add(std::make_unique<juce::AudioParameterFloat>(ID_PREFIX_Q + index, NAME_PREFIX_BAND + index + NAME_PREFIX_Q, qualRange, qualRange.snapToLegalValue(QUAL_CENTRE)));
+            layout.add(std::make_unique<juce::AudioParameterChoice>(ID_PREFIX_TYPE + index, NAME_PREFIX_BAND + index + NAME_PREFIX_TYPE, filterTags, DEFAULT_FILTER));
         }
         return layout;
     };
