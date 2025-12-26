@@ -185,6 +185,8 @@ private:
     juce::dsp::ProcessorChain<juce::dsp::Gain<T>> outGain;
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout() const
     {
+        static constexpr bool BYPASS_DEFAULT = false;
+        static constexpr int TYPE_DEFAULT = 4;
         static constexpr float FREQ_START = 20.0f;
         static constexpr float FREQ_END = 20000.0f;
         static constexpr float FREQ_INTERVAL = 0.1f;
@@ -203,17 +205,16 @@ private:
         freqRange.setSkewForCentre(freqRange.snapToLegalValue(FREQ_CENTRE));
         qualRange.setSkewForCentre(qualRange.snapToLegalValue(QUAL_CENTRE));
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(std::make_unique<juce::AudioParameterBool>(ID_BYPASS, NAME_BYPASS, false));
+        layout.add(std::make_unique<juce::AudioParameterBool>(ID_BYPASS, NAME_BYPASS, BYPASS_DEFAULT));
         layout.add(std::make_unique<juce::AudioParameterFloat>(ID_GAIN, NAME_GAIN, gainRange, GAIN_CENTRE, UNIT_DB));
-        const int DEFAULT_FILTER = 4;
         for (int i = 0; i < NUM_BANDS; ++i)
         {
             const juce::String index = juce::String(i + 1);
-            layout.add(std::make_unique<juce::AudioParameterBool>(ID_PREFIX_BYPASS + index, NAME_PREFIX_BAND + index + NAME_PREFIX_BYPASS, false));
+            layout.add(std::make_unique<juce::AudioParameterBool>(ID_PREFIX_BYPASS + index, NAME_PREFIX_BAND + index + NAME_PREFIX_BYPASS, BYPASS_DEFAULT));
             layout.add(std::make_unique<juce::AudioParameterFloat>(ID_PREFIX_FREQ + index, NAME_PREFIX_BAND + index + NAME_PREFIX_FREQ, freqRange, freqRange.snapToLegalValue(FREQ_CENTRE), UNIT_HZ));
             layout.add(std::make_unique<juce::AudioParameterFloat>(ID_PREFIX_GAIN + index, NAME_PREFIX_BAND + index + NAME_PREFIX_GAIN, gainRange, GAIN_CENTRE, UNIT_DB));
             layout.add(std::make_unique<juce::AudioParameterFloat>(ID_PREFIX_Q + index, NAME_PREFIX_BAND + index + NAME_PREFIX_Q, qualRange, qualRange.snapToLegalValue(QUAL_CENTRE)));
-            layout.add(std::make_unique<juce::AudioParameterChoice>(ID_PREFIX_TYPE + index, NAME_PREFIX_BAND + index + NAME_PREFIX_TYPE, filterTags, DEFAULT_FILTER));
+            layout.add(std::make_unique<juce::AudioParameterChoice>(ID_PREFIX_TYPE + index, NAME_PREFIX_BAND + index + NAME_PREFIX_TYPE, filterTags, TYPE_DEFAULT));
         }
         return layout;
     };
