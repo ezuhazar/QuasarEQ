@@ -3,6 +3,8 @@
 #include <JuceHeader.h>
 #include "QFifo.h"
 
+static constexpr int NUM_BANDS = 8;
+
 using T = float;
 
 const juce::StringArray bandParamPrefixes = {"Freq", "Gain", "Q", "Type", "Bypass"};
@@ -133,8 +135,6 @@ public:
     SingleChannelSampleFifo leftChannelFifo {Channel::Left};
     SingleChannelSampleFifo rightChannelFifo {Channel::Right};
     juce::AudioProcessorValueTreeState apvts;
-    static constexpr int NUM_BANDS = 8;
-
 
 private:
     static constexpr float MIN_FREQ = 20.0f;

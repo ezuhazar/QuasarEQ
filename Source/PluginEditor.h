@@ -195,7 +195,7 @@ public:
         analyzerThread(pathProducer, *this)
     {
         freqLUT = pathProducer.makeFreqLUT(audioProcessor.getSampleRate(), MIN_HZ, MAX_HZ);
-        for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
+        for (int i = 0; i < NUM_BANDS; ++i)
         {
             const juce::String index = juce::String (i + 1);
             for (const auto& prefix : bandParamPrefixes)
@@ -206,7 +206,7 @@ public:
     };
     ~VisualizerComponent()
     {
-        for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
+        for (int i = 0; i < NUM_BANDS; ++i)
         {
             const juce::String index = juce::String (i + 1);
             for (const auto& prefix : bandParamPrefixes)
@@ -277,7 +277,7 @@ public:
         auto bounds = getCurveArea().toFloat();
         const float minDb = -24.0f;
         const float maxDb = 24.0f;
-        for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
+        for (int i = 0; i < NUM_BANDS; ++i)
         {
             juce::String index = juce::String(i + 1);
             float freqHz = apvts.getRawParameterValue("Freq" + index)->load();
@@ -368,7 +368,7 @@ private:
         const float minDb = -24.0f;
         const float maxDb = 24.0f;
         const float tolerance = 10.0f;
-        for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
+        for (int i = 0; i < NUM_BANDS; ++i)
         {
             juce::String index = juce::String(i + 1);
             float freqHz = audioProcessor.apvts.getRawParameterValue("Freq" + index)->load();
@@ -524,9 +524,9 @@ private:
         responseCurveMagnitude.clear();
         responseCurveMagnitude.resize(curveSize, 0.0f);
         using T = float;
-        std::array<juce::dsp::IIR::Coefficients<T>::Ptr, audioProcessor.NUM_BANDS> coefsBuffer;
+        std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> coefsBuffer;
         auto& apvts = audioProcessor.apvts;
-        for (size_t i = 0; i < audioProcessor.NUM_BANDS; ++i)
+        for (size_t i = 0; i < NUM_BANDS; ++i)
         {
             const juce::String idx = juce::String(i + 1);
             const auto bandF = juce::jmin(apvts.getRawParameterValue("Freq" + idx)->load(), static_cast<float>(sr * 0.49));
@@ -705,7 +705,7 @@ public:
     QuasarEQAudioProcessorEditor(QuasarEQAudioProcessor& p): AudioProcessorEditor(&p), audioProcessor(p), visualizerComponent(p)
     {
         setLookAndFeel(&customLNF);
-        for (int i = 0; i < audioProcessor.NUM_BANDS; ++i)
+        for (int i = 0; i < NUM_BANDS; ++i)
         {
             bandControls.push_back(std::make_unique<FilterBandControl>(audioProcessor.apvts, i));
             addAndMakeVisible(*bandControls.back());
