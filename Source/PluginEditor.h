@@ -715,13 +715,14 @@ public:
         pluginInfoLabel.setFont(16.0f);
         gainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
         gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
+        bypassButton.setClickingTogglesState(true);
         addAndMakeVisible(visualizerComponent);
         addAndMakeVisible(pluginInfoLabel);
         addAndMakeVisible(gainSlider);
         addAndMakeVisible(bypassButton);
         outGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "outGain", gainSlider);
         bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "bypass", bypassButton);
-        setSize(657, margin * 2 + topSectionH + midSectionH + botSectionH);
+        setSize(657, windowHeight);
     };
     QuasarEQAudioProcessorEditor::~QuasarEQAudioProcessorEditor()
     {
@@ -735,6 +736,7 @@ public:
     static constexpr int topSectionH = 40;
     static constexpr int midSectionH = 300;
     static constexpr int botSectionH = 300;
+    static constexpr int windowHeight = margin * 2 + topSectionH + midSectionH + botSectionH;
     void resized() override
     {
         juce::Rectangle<int> mainArea = getLocalBounds().reduced(margin);
@@ -743,10 +745,10 @@ public:
         juce::Rectangle<int> bot = mainArea.removeFromTop(botSectionH).reduced(margin);
         const int sideSize = 55;
         bypassButton.setBounds(top.removeFromLeft(sideSize).reduced(margin));
-        bypassButton.setClickingTogglesState(true);
         pluginInfoLabel.setBounds(top.reduced(margin));
         visualizerComponent.setBounds(mid);
         gainSlider.setBounds(bot.removeFromRight(20 * 3).reduced(margin));
+        bot.reduce(margin, margin);
         const int bandWidth = bot.getWidth() / bandControls.size();
         for (int i = 0; i < bandControls.size(); ++i)
         {
@@ -809,12 +811,13 @@ private:
         ~FilterBandControl() override {};
         void resized() override
         {
-            auto bounds = getLocalBounds().reduced(6);
-            typeComboBox.setBounds(bounds.removeFromTop(30).reduced(2));
+            auto bounds = getLocalBounds();
+            typeComboBox.setBounds(bounds.removeFromTop(30).reduced(margin));
+            bounds.reduce(margin, margin);
             int controlHeight = bounds.getHeight() / 3;
-            freqSlider.setBounds(bounds.removeFromTop(controlHeight).reduced(2));
-            gainSlider.setBounds(bounds.removeFromTop(controlHeight).reduced(2));
-            qSlider.setBounds(bounds.reduced(2));
+            freqSlider.setBounds(bounds.removeFromTop(controlHeight).reduced(margin));
+            gainSlider.setBounds(bounds.removeFromTop(controlHeight).reduced(margin));
+            qSlider.setBounds(bounds.reduced(margin));
         };
     private:
         std::vector<juce::Component*> allComponents {&typeComboBox, &freqSlider, &gainSlider, &qSlider};
