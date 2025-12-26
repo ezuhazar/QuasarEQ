@@ -203,6 +203,7 @@ private:
             layout.add(std::make_unique<juce::AudioParameterFloat>("Gain" + index, "Band " + index + " Gain", gainRange, CENTRE_GAIN, "dB"));
             layout.add(std::make_unique<juce::AudioParameterFloat>("Q" + index, "Band " + index + " Q", QRange, CENTRE_Q));
             layout.add(std::make_unique<juce::AudioParameterChoice>("Type" + index, "Band " + index + " Type", filterTags, DEFAULT_FILTER));
+            layout.add(std::make_unique<juce::AudioParameterBool>("Bypass" + index, "Band " + index + " Bypass", false));
         }
         return layout;
     };
