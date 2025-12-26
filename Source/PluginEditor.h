@@ -721,7 +721,7 @@ public:
         addAndMakeVisible(bypassButton);
         outGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "outGain", gainSlider);
         bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "bypass", bypassButton);
-        setSize(652, 652);
+        setSize(657, margin * 2 + topSectionH + midSectionH + botSectionH);
     };
     QuasarEQAudioProcessorEditor::~QuasarEQAudioProcessorEditor()
     {
@@ -731,17 +731,17 @@ public:
     {
         g.fillAll(BACKGROUND_COLOR);
     }
+    static constexpr int margin = 4;
+    static constexpr int topSectionH = 40;
+    static constexpr int midSectionH = 300;
+    static constexpr int botSectionH = 300;
     void resized() override
     {
-        const int margin = 6;
-        const int topSectionHeight = 40;
-        const int midSectionHeight = 300;
-        const int botSectionHeight = 300;
         juce::Rectangle<int> mainArea = getLocalBounds().reduced(margin);
-        juce::Rectangle<int> top = mainArea.removeFromTop(topSectionHeight).reduced(margin);
-        juce::Rectangle<int> mid = mainArea.removeFromTop(midSectionHeight).reduced(margin);
-        juce::Rectangle<int> bot = mainArea.removeFromTop(botSectionHeight).reduced(margin);
-        const int sideSize = top.getHeight();
+        juce::Rectangle<int> top = mainArea.removeFromTop(topSectionH).reduced(margin);
+        juce::Rectangle<int> mid = mainArea.removeFromTop(midSectionH).reduced(margin);
+        juce::Rectangle<int> bot = mainArea.removeFromTop(botSectionH).reduced(margin);
+        const int sideSize = 55;
         bypassButton.setBounds(top.removeFromLeft(sideSize).reduced(margin));
         bypassButton.setClickingTogglesState(true);
         pluginInfoLabel.setBounds(top.reduced(margin));
@@ -762,21 +762,30 @@ private:
     class CustomButton: public juce::Button
     {
     public:
-        CustomButton(): juce::Button("PowerButton") {};
+        CustomButton(): juce::Button("PowerButton") {}
         void paintButton(juce::Graphics& g, bool isMouseOverButton, bool isButtonDown) override
         {
-            g.setColour(getToggleState() ? quasar::colours::enabled : quasar::colours::disabled);
-            g.fillRect(getLocalBounds());
-        };
+            const auto isBypass = getToggleState();
+            const auto color = isBypass ? quasar::colours::enabled : quasar::colours::disabled;
+            auto bounds = getLocalBounds().toFloat();
+            g.setColour(juce::Colours::black);
+            g.fillRect(bounds);
+            g.setColour(color);
+            g.drawRect(bounds, 2.0f);
+            g.setFont(12.0f);
+            g.drawText("Bypass", getLocalBounds(), juce::Justification::centred);
+        }
         void mouseEnter(const juce::MouseEvent& event) override
         {
             setMouseCursor(juce::MouseCursor::PointingHandCursor);
-        };
+        }
         void mouseExit(const juce::MouseEvent& event) override
         {
             setMouseCursor(juce::MouseCursor::NormalCursor);
-        };
+        }
     };
+
+
     class FilterBandControl: public juce::Component
     {
     public:
