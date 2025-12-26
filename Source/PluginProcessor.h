@@ -34,6 +34,44 @@ static constexpr juce::dsp::IIR::Coefficients<T>::Ptr (*filterFactories[])(doubl
     wrap<juce::dsp::IIR::Coefficients<T>::makeLowShelf>,
     wrap<juce::dsp::IIR::Coefficients<T>::makePeakFilter>
 };
+template <typename T>
+constexpr T constexpr_sqrt(T x)
+{
+    if (x < 0)
+    {
+        return std::numeric_limits<T>::quiet_NaN();
+    }
+    if (x == 0 || x == std::numeric_limits<T>::infinity())
+    {
+        return x;
+    }
+    T curr = x;
+    T prev = 0;
+    while (curr != prev)
+    {
+        prev = curr;
+        curr = (curr + x / curr) * 0.5;
+    }
+    return curr;
+}
+template <size_t... I>
+auto make_chain_type(std::index_sequence<I...>) -> juce::dsp::ProcessorChain < std::decay_t<decltype((void)I, juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>{}) > ... > ;
+template <size_t N>
+using FilterChain = decltype(make_chain_type(std::make_index_sequence<N>{}));
+static constexpr bool BYPASS_DEFAULT = false;
+static constexpr int TYPE_DEFAULT = 4;
+static constexpr float FREQ_START = 20.0f;
+static constexpr float FREQ_END = 20000.0f;
+static constexpr float FREQ_INTERVAL = 0.1f;
+static constexpr float FREQ_CENTRE = constexpr_sqrt(FREQ_START * FREQ_END);
+static constexpr float GAIN_START = -24.0f;
+static constexpr float GAIN_END = 24.0f;
+static constexpr float GAIN_INTERVAL = 0.01f;
+static constexpr float GAIN_CENTRE = 0.0f;
+static constexpr float QUAL_START = 0.05f;
+static constexpr float QUAL_END = 12.0f;
+static constexpr float QUAL_INTERVAL = 0.001f;
+static constexpr float QUAL_CENTRE = 1.0f / juce::MathConstants<float>::sqrt2;
 class QuasarEQAudioProcessor: public juce::AudioProcessor, public juce::AudioProcessorValueTreeState::Listener
 {
 public:
@@ -179,26 +217,10 @@ private:
     {
         ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(bypassStates[I])), ...);
     }
-    template <typename T, size_t N, typename... Args> struct RepeatTypeHelper: RepeatTypeHelper<T, N - 1, T, Args...> {};
-    template <typename T, typename... Args> struct RepeatTypeHelper<T, 0, Args...> { using Type = juce::dsp::ProcessorChain<Args...>; };
-    typename RepeatTypeHelper<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>, NUM_BANDS>::Type filterChain;
+    FilterChain<NUM_BANDS> filterChain;
     juce::dsp::ProcessorChain<juce::dsp::Gain<T>> outGain;
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout() const
     {
-        static constexpr bool BYPASS_DEFAULT = false;
-        static constexpr int TYPE_DEFAULT = 4;
-        static constexpr float FREQ_START = 20.0f;
-        static constexpr float FREQ_END = 20000.0f;
-        static constexpr float FREQ_INTERVAL = 0.1f;
-        static constexpr float GAIN_START = -24.0f;
-        static constexpr float GAIN_END = 24.0f;
-        static constexpr float GAIN_INTERVAL = 0.01f;
-        static constexpr float GAIN_CENTRE = 0.0f;
-        static constexpr float QUAL_START = 0.05f;
-        static constexpr float QUAL_END = 12.0f;
-        static constexpr float QUAL_INTERVAL = 0.001f;
-        static constexpr float QUAL_CENTRE = 1.0f / juce::MathConstants<float>::sqrt2;
-        const float FREQ_CENTRE = std::sqrt(FREQ_START * FREQ_END);
         juce::NormalisableRange<float> gainRange {GAIN_START, GAIN_END, GAIN_INTERVAL};
         juce::NormalisableRange<float> freqRange {FREQ_START, FREQ_END, FREQ_INTERVAL};
         juce::NormalisableRange<float> qualRange {QUAL_START, QUAL_END, QUAL_INTERVAL};
