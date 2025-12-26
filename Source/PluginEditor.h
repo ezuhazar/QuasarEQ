@@ -784,8 +784,6 @@ private:
             setMouseCursor(juce::MouseCursor::NormalCursor);
         }
     };
-
-
     class FilterBandControl: public juce::Component
     {
     public:
