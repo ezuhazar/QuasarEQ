@@ -31,6 +31,7 @@ public:
             {
                 apvts.addParameterListener (prefix + index, this);
             }
+            apvts.addParameterListener ("Bypass" + index, this);
         }
     }
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -146,11 +147,15 @@ private:
     static constexpr float Q_INTERVAL = 0.001f;
 
     std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> coefsBuffer;
+    std::array<bool, NUM_BANDS> bandBypassStates {};
+
     std::atomic<bool> parametersChanged {true};
 
     void updateFilters()
     {
         const auto sr = getSampleRate();
+        const auto globalBypass = static_cast<bool>(apvts.getRawParameterValue("bypass")->load());
+        std::array<bool, NUM_BANDS> bandBypassStates {};
         for (size_t i = 0; i < NUM_BANDS; ++i)
         {
             const juce::String idx = juce::String(i + 1);
@@ -159,19 +164,22 @@ private:
             const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue("Gain" + idx)->load());
             const auto bandT = static_cast<int>(apvts.getRawParameterValue("Type" + idx)->load());
             coefsBuffer[i] = filterFactories[bandT](sr, bandF, bandQ, bandG);
+            const bool individualBypass = static_cast<bool>(apvts.getRawParameterValue("Bypass" + idx)->load());
+            bandBypassStates[i] = globalBypass || individualBypass;
         }
-        const auto isBypass = static_cast<bool>(apvts.getRawParameterValue("bypass")->load());
         const auto g = apvts.getRawParameterValue("outGain")->load();
-        outGain.setBypassed<0>(isBypass);
+        outGain.setBypassed<0>(globalBypass);
         outGain.get<0>().setGainDecibels(g);
-        updateFilterChainCoefficients(coefsBuffer, isBypass, std::make_index_sequence<NUM_BANDS> {});
+        updateFilterChainCoefficients(coefsBuffer, bandBypassStates, std::make_index_sequence<NUM_BANDS> {});
         parametersChanged.store(false);
     };
 
     template <size_t... I>
-    void updateFilterChainCoefficients(const std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS>& newCoefs, bool isBypassed, std::index_sequence<I...>)
+    void updateFilterChainCoefficients(const std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS>& newCoefs,
+        const std::array<bool, NUM_BANDS>& bypassStates,
+        std::index_sequence<I...>)
     {
-        ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(isBypassed)), ...);
+        ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(bypassStates[I])), ...);
     }
 
     template <typename T, size_t N, typename... Args> struct RepeatTypeHelper: RepeatTypeHelper<T, N - 1, T, Args...> {};
