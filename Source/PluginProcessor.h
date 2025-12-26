@@ -189,6 +189,13 @@ private:
     std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> coefsBuffer;
     std::array<bool, NUM_BANDS> bandBypassStates;
     std::atomic<bool> parametersChanged {true};
+    FilterChain<NUM_BANDS> filterChain;
+    juce::dsp::ProcessorChain<juce::dsp::Gain<T>> outGain;
+    template <size_t... I>
+    void updateFilterChainCoefficients(const std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS>& newCoefs, const std::array<bool, NUM_BANDS>& bypassStates, std::index_sequence<I...>)
+    {
+        ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(bypassStates[I])), ...);
+    }
     void updateFilters()
     {
         const auto sr = getSampleRate();
@@ -210,15 +217,6 @@ private:
         updateFilterChainCoefficients(coefsBuffer, bandBypassStates, std::make_index_sequence<NUM_BANDS> {});
         parametersChanged.store(false);
     };
-    template <size_t... I>
-    void updateFilterChainCoefficients(const std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS>& newCoefs,
-        const std::array<bool, NUM_BANDS>& bypassStates,
-        std::index_sequence<I...>)
-    {
-        ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(bypassStates[I])), ...);
-    }
-    FilterChain<NUM_BANDS> filterChain;
-    juce::dsp::ProcessorChain<juce::dsp::Gain<T>> outGain;
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout() const
     {
         juce::NormalisableRange<float> gainRange {GAIN_START, GAIN_END, GAIN_INTERVAL};
