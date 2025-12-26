@@ -533,7 +533,7 @@ private:
             const auto bandQ = apvts.getRawParameterValue("Q" + idx)->load();
             const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue("Gain" + idx)->load());
             const auto bandT = static_cast<int>(apvts.getRawParameterValue("Type" + idx)->load());
-            coefsBuffer[i] = audioProcessor.filterFactories[bandT](sr, bandF, bandQ, bandG);
+            coefsBuffer[i] = filterFactories[bandT](sr, bandF, bandQ, bandG);
         }
         for (int i = 0; i < curveSize; ++i)
         {

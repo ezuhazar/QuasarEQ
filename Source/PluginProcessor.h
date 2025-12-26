@@ -3,8 +3,22 @@
 #include <JuceHeader.h>
 #include "QFifo.h"
 
+using T = float;
+
 const juce::StringArray bandParamPrefixes = {"Freq", "Gain", "Q", "Type", "Bypass"};
 const juce::StringArray filterTags {"HighPass", "HighShelf", "LowPass", "LowShelf", "Peak"};
+
+template <juce::dsp::IIR::Coefficients<T>::Ptr (*F)(double, T, T, T)>
+static constexpr juce::dsp::IIR::Coefficients<T>::Ptr wrap(double sr, T f, T q, T g) { return F(sr, f, q, g); }
+template <juce::dsp::IIR::Coefficients<T>::Ptr (*F)(double, T, T)>
+static constexpr juce::dsp::IIR::Coefficients<T>::Ptr wrap(double sr, T f, T q, T) { return F(sr, f, q); }
+static constexpr juce::dsp::IIR::Coefficients<T>::Ptr (*filterFactories[])(double, T, T, T) = {
+    wrap<juce::dsp::IIR::Coefficients<T>::makeHighPass>,
+    wrap<juce::dsp::IIR::Coefficients<T>::makeHighShelf>,
+    wrap<juce::dsp::IIR::Coefficients<T>::makeLowPass>,
+    wrap<juce::dsp::IIR::Coefficients<T>::makeLowShelf>,
+    wrap<juce::dsp::IIR::Coefficients<T>::makePeakFilter>
+};
 
 class QuasarEQAudioProcessor: public juce::AudioProcessor, public juce::AudioProcessorValueTreeState::Listener
 {
@@ -115,24 +129,12 @@ public:
 
     juce::AudioProcessorEditor* createEditor() override;
 
-    using T = float;
 
     SingleChannelSampleFifo leftChannelFifo {Channel::Left};
     SingleChannelSampleFifo rightChannelFifo {Channel::Right};
     juce::AudioProcessorValueTreeState apvts;
     static constexpr int NUM_BANDS = 8;
 
-    template <juce::dsp::IIR::Coefficients<T>::Ptr (*F)(double, T, T, T)>
-    static constexpr juce::dsp::IIR::Coefficients<T>::Ptr wrap(double sr, T f, T q, T g) { return F(sr, f, q, g); }
-    template <juce::dsp::IIR::Coefficients<T>::Ptr (*F)(double, T, T)>
-    static constexpr juce::dsp::IIR::Coefficients<T>::Ptr wrap(double sr, T f, T q, T) { return F(sr, f, q); }
-    static constexpr juce::dsp::IIR::Coefficients<T>::Ptr (*filterFactories[])(double, T, T, T) = {
-        wrap<juce::dsp::IIR::Coefficients<T>::makeHighPass>,
-        wrap<juce::dsp::IIR::Coefficients<T>::makeHighShelf>,
-        wrap<juce::dsp::IIR::Coefficients<T>::makeLowPass>,
-        wrap<juce::dsp::IIR::Coefficients<T>::makeLowShelf>,
-        wrap<juce::dsp::IIR::Coefficients<T>::makePeakFilter>
-    };
 
 private:
     static constexpr float MIN_FREQ = 20.0f;
