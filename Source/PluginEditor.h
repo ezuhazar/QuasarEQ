@@ -733,7 +733,7 @@ public:
         g.fillAll(BACKGROUND_COLOR);
     }
     static constexpr int margin = 4;
-    static constexpr int topSectionH = 40;
+    static constexpr int topSectionH = 38;
     static constexpr int midSectionH = 300;
     static constexpr int botSectionH = 300;
     static constexpr int windowHeight = margin * 2 + topSectionH + midSectionH + botSectionH;
