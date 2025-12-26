@@ -4,7 +4,7 @@
 #include "QFifo.h"
 
 const juce::StringArray bandParamPrefixes = {"Freq", "Gain", "Q", "Type"};
-const juce::StringArray filterTags {"HPF", "HSF", "LPF", "LSF", "PF"};
+const juce::StringArray filterTags {"HighPass", "HighShelf", "LowPass", "LowShelf", "Peak"};
 
 class QuasarEQAudioProcessor: public juce::AudioProcessor, public juce::AudioProcessorValueTreeState::Listener
 {
