@@ -127,7 +127,8 @@ public:
             apvts.replaceState(tree);
         }
     };
-    void parameterChanged(const juce::String& parameterID, float newValue) { 
+    void parameterChanged(const juce::String& parameterID, float newValue)
+    {
         parametersChanged.store(true);
     };
 
@@ -187,19 +188,21 @@ private:
     template <typename T, typename... Args> struct RepeatTypeHelper<T, 0, Args...> { using Type = juce::dsp::ProcessorChain<Args...>; };
     typename RepeatTypeHelper<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>, NUM_BANDS>::Type filterChain;
     juce::dsp::ProcessorChain<juce::dsp::Gain<T>> outGain;
-
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout() const
     {
         const float FREQ_RATIO = std::pow(MAX_FREQ / MIN_FREQ, 1.0 / static_cast<double>(NUM_BANDS + 1));
         const float CENTRE_GAIN = 0.0f;
-        const float CENTRE_FREQ = std::sqrtf(MIN_FREQ * MAX_FREQ);
-        const float CENTRE_Q = 0.707f;
         const int DEFAULT_FILTER = 4;
         juce::NormalisableRange<float> gainRange (MIN_GAIN, MAX_GAIN, GAIN_INTERVAL);
         juce::NormalisableRange<float> FreqRange (MIN_FREQ, MAX_FREQ, FREQ_INTERVAL);
         juce::NormalisableRange<float> QRange (MIN_Q, MAX_Q, Q_INTERVAL);
+        const float CENTRE_FREQ_RAW = std::sqrtf(MIN_FREQ * MAX_FREQ);
+        const float CENTRE_Q_RAW = 1.0f / juce::MathConstants<float>::sqrt2;
+        const float CENTRE_FREQ = FreqRange.snapToLegalValue(CENTRE_FREQ_RAW);
+        const float CENTRE_Q = QRange.snapToLegalValue(CENTRE_Q_RAW);
         FreqRange.setSkewForCentre(CENTRE_FREQ);
         QRange.setSkewForCentre(CENTRE_Q);
+
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(std::make_unique<juce::AudioParameterFloat>("outGain", "Out Gain", gainRange, CENTRE_GAIN, "dB"));
         layout.add(std::make_unique<juce::AudioParameterBool>("bypass", "Bypass", false));
