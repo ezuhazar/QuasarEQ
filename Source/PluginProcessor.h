@@ -127,10 +127,11 @@ public:
             apvts.replaceState(tree);
         }
     };
-    void parameterChanged(const juce::String& parameterID, float newValue) { parametersChanged.store(true); };
+    void parameterChanged(const juce::String& parameterID, float newValue) { 
+        parametersChanged.store(true);
+    };
 
     juce::AudioProcessorEditor* createEditor() override;
-
 
     SingleChannelSampleFifo leftChannelFifo {Channel::Left};
     SingleChannelSampleFifo rightChannelFifo {Channel::Right};
