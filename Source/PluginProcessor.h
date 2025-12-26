@@ -8,8 +8,9 @@ static inline const juce::String ID_PREFIX_GAIN {"Gain"};
 static inline const juce::String ID_PREFIX_Q {"Q"};
 static inline const juce::String ID_PREFIX_TYPE {"Type"};
 static inline const juce::String ID_PREFIX_BYPASS {"Bypass"};
+static inline const juce::String ID_PARAMETERS {"Parameters"};
 static inline const juce::String NAME_BYPASS {"Bypass"};
-static inline const juce::String NAME_GAIN {"Out Gain"};
+static inline const juce::String NAME_GAIN {"Gain"};
 static inline const juce::String NAME_PREFIX_FREQ {"Freq"};
 static inline const juce::String NAME_PREFIX_GAIN {"Gain"};
 static inline const juce::String NAME_PREFIX_Q {"Q"};
@@ -47,7 +48,7 @@ public:
 #endif
         )
 #endif
-        , apvts(*this, nullptr, "Parameters", createParameterLayout())
+        , apvts(*this, nullptr, ID_PARAMETERS, createParameterLayout())
     {
         apvts.addParameterListener(ID_GAIN, this);
         apvts.addParameterListener(ID_BYPASS, this);
