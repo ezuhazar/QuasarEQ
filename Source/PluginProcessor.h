@@ -147,7 +147,7 @@ private:
     static constexpr float Q_INTERVAL = 0.001f;
 
     std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> coefsBuffer;
-    std::array<bool, NUM_BANDS> bandBypassStates {};
+    std::array<bool, NUM_BANDS> bandBypassStates;
 
     std::atomic<bool> parametersChanged {true};
 
@@ -155,7 +155,6 @@ private:
     {
         const auto sr = getSampleRate();
         const auto globalBypass = static_cast<bool>(apvts.getRawParameterValue("bypass")->load());
-        std::array<bool, NUM_BANDS> bandBypassStates {};
         for (size_t i = 0; i < NUM_BANDS; ++i)
         {
             const juce::String idx = juce::String(i + 1);
