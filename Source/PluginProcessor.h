@@ -126,7 +126,7 @@ public:
         filterChain.reset();
         outGain.prepare(spec);
         outGain.reset();
-        updateFilters();
+        updateFilters(ALL_UPDATE_MASK);
     }
     void processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) override
     {
@@ -137,9 +137,9 @@ public:
         {
             buffer.clear(i, 0, buffer.getNumSamples());
         }
-        if (updateFlags.load() != 0)
+        if (auto flags = updateFlags.exchange(0))
         {
-            updateFilters();
+            updateFilters(flags);
         }
         juce::dsp::AudioBlock<float> block(buffer);
         juce::dsp::ProcessContextReplacing<float> context(block);
@@ -196,9 +196,8 @@ private:
     FilterChain<NUM_BANDS> filterChain;
     juce::dsp::ProcessorChain<juce::dsp::Gain<T>> outGain;
    
-    void updateFilters()
+    void updateFilters(uint32_t flags)
     {
-        const auto flags = updateFlags.exchange(0);
         if (flags == 0) return;
 
         const auto sr = getSampleRate();
