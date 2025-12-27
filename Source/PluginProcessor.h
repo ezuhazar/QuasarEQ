@@ -195,13 +195,15 @@ public:
     SingleChannelSampleFifo rightChannelFifo {Channel::Right};
     juce::AudioProcessorValueTreeState apvts;
 private:
+    static constexpr uint32_t ALL_BANDS_MASK = (1u << NUM_BANDS) - 1;
+    static constexpr uint32_t GLOBAL_PARAMS_MASK = (1u << NUM_BANDS);
+    static constexpr uint32_t ALL_UPDATE_MASK = ALL_BANDS_MASK | GLOBAL_PARAMS_MASK;
     FilterChain<NUM_BANDS> filterChain;
     juce::dsp::ProcessorChain<juce::dsp::Gain<T>> outGain;
-   
+    std::atomic<uint32_t> updateFlags {ALL_UPDATE_MASK};
     void updateFilters(uint32_t flags)
     {
         if (flags == 0) return;
-
         const auto sr = getSampleRate();
         const bool globalBypass = static_cast<bool>(apvts.getRawParameterValue(ID_BYPASS)->load());
         for (int i = 0; i < NUM_BANDS; ++i)
@@ -213,10 +215,8 @@ private:
                 const auto bandQ = apvts.getRawParameterValue(ID_PREFIX_Q + idx)->load();
                 const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue(ID_PREFIX_GAIN + idx)->load());
                 const auto bandT = static_cast<int>(apvts.getRawParameterValue(ID_PREFIX_TYPE + idx)->load());
-
                 auto newCoefs = filterFactories[bandT](sr, bandF, bandQ, bandG);
                 const bool individualBypass = static_cast<bool>(apvts.getRawParameterValue(ID_PREFIX_BYPASS + idx)->load());
-
                 updateProcessorAtIndex(i, newCoefs, globalBypass || individualBypass);
             }
         }
@@ -227,7 +227,6 @@ private:
             outGain.get<0>().setGainDecibels(g);
         }
     }
-
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout() const
     {
         juce::NormalisableRange<float> gainRange {GAIN_START, GAIN_END, GAIN_INTERVAL};
@@ -249,13 +248,6 @@ private:
         }
         return layout;
     };
-
-    static constexpr uint32_t ALL_BANDS_MASK = (1u << NUM_BANDS) - 1;
-    static constexpr uint32_t GLOBAL_PARAMS_MASK = (1u << NUM_BANDS);
-    static constexpr uint32_t ALL_UPDATE_MASK = ALL_BANDS_MASK | GLOBAL_PARAMS_MASK;
-
-    std::atomic<uint32_t> updateFlags {ALL_UPDATE_MASK};
-
     template <size_t I>
     void updateSpecificFilter(int targetIndex, juce::dsp::IIR::Coefficients<T>::Ptr newCoefs, bool bypassed)
     {
@@ -265,9 +257,10 @@ private:
             filterChain.setBypassed<I>(bypassed);
         }
         if constexpr (I + 1 < NUM_BANDS)
+        {
             updateSpecificFilter<I + 1>(targetIndex, newCoefs, bypassed);
+        }
     }
-
     void updateProcessorAtIndex(int index, juce::dsp::IIR::Coefficients<T>::Ptr newCoefs, bool bypassed)
     {
         updateSpecificFilter<0>(index, newCoefs, bypassed);
