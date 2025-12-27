@@ -141,7 +141,7 @@ public:
         {
             buffer.clear(i, 0, buffer.getNumSamples());
         }
-        if (parametersChanged.exchange(false))
+        if (updateFlags.load() != 0)
         {
             updateFilters();
         }
@@ -180,42 +180,57 @@ public:
     juce::AudioProcessorEditor* createEditor() override;
     void parameterChanged(const juce::String& parameterID, float newValue)
     {
-        parametersChanged.store(true);
+        if (parameterID == ID_GAIN || parameterID == ID_BYPASS)
+        {
+            updateFlags.fetch_or(1 << NUM_BANDS);
+        }
+        else
+        {
+            int bandNum = parameterID.getTrailingIntValue();
+            if (bandNum >= 1 && bandNum <= NUM_BANDS)
+            {
+                updateFlags.fetch_or(1 << (bandNum - 1));
+            }
+        }
     };
     SingleChannelSampleFifo leftChannelFifo {Channel::Left};
     SingleChannelSampleFifo rightChannelFifo {Channel::Right};
     juce::AudioProcessorValueTreeState apvts;
 private:
-    std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> coefsBuffer;
-    std::array<bool, NUM_BANDS> bandBypassStates;
-    std::atomic<bool> parametersChanged {true};
     FilterChain<NUM_BANDS> filterChain;
     juce::dsp::ProcessorChain<juce::dsp::Gain<T>> outGain;
-    template <size_t... I>
-    void updateFilterChainCoefficients(const std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS>& newCoefs, const std::array<bool, NUM_BANDS>& bypassStates, std::index_sequence<I...>)
-    {
-        ((*filterChain.get<I>().state = *newCoefs[I], filterChain.setBypassed<I>(bypassStates[I])), ...);
-    }
+   
     void updateFilters()
     {
+        const auto flags = updateFlags.exchange(0);
+        if (flags == 0) return;
+
         const auto sr = getSampleRate();
-        const auto globalBypass = static_cast<bool>(apvts.getRawParameterValue(ID_BYPASS)->load());
-        for (size_t i = 0; i < NUM_BANDS; ++i)
+        const bool globalBypass = static_cast<bool>(apvts.getRawParameterValue(ID_BYPASS)->load());
+        for (int i = 0; i < NUM_BANDS; ++i)
         {
-            const juce::String idx = juce::String(i + 1);
-            const auto bandF = juce::jmin(apvts.getRawParameterValue(ID_PREFIX_FREQ + idx)->load(), static_cast<float>(sr * 0.49));
-            const auto bandQ = apvts.getRawParameterValue(ID_PREFIX_Q + idx)->load();
-            const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue(ID_PREFIX_GAIN + idx)->load());
-            const auto bandT = static_cast<int>(apvts.getRawParameterValue(ID_PREFIX_TYPE + idx)->load());
-            coefsBuffer[i] = filterFactories[bandT](sr, bandF, bandQ, bandG);
-            const bool individualBypass = static_cast<bool>(apvts.getRawParameterValue(ID_PREFIX_BYPASS + idx)->load());
-            bandBypassStates[i] = globalBypass || individualBypass;
+            if ((flags & (1 << i)) || (flags & (1 << NUM_BANDS)))
+            {
+                const juce::String idx = juce::String(i + 1);
+                const auto bandF = juce::jmin(apvts.getRawParameterValue(ID_PREFIX_FREQ + idx)->load(), static_cast<float>(sr * 0.49));
+                const auto bandQ = apvts.getRawParameterValue(ID_PREFIX_Q + idx)->load();
+                const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue(ID_PREFIX_GAIN + idx)->load());
+                const auto bandT = static_cast<int>(apvts.getRawParameterValue(ID_PREFIX_TYPE + idx)->load());
+
+                auto newCoefs = filterFactories[bandT](sr, bandF, bandQ, bandG);
+                const bool individualBypass = static_cast<bool>(apvts.getRawParameterValue(ID_PREFIX_BYPASS + idx)->load());
+
+                updateProcessorAtIndex(i, newCoefs, globalBypass || individualBypass);
+            }
         }
-        const auto g = apvts.getRawParameterValue(ID_GAIN)->load();
-        outGain.setBypassed<0>(globalBypass);
-        outGain.get<0>().setGainDecibels(g);
-        updateFilterChainCoefficients(coefsBuffer, bandBypassStates, std::make_index_sequence<NUM_BANDS> {});
-    };
+        if (flags & (1 << NUM_BANDS))
+        {
+            const auto g = apvts.getRawParameterValue(ID_GAIN)->load();
+            outGain.setBypassed<0>(globalBypass);
+            outGain.get<0>().setGainDecibels(g);
+        }
+    }
+
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout() const
     {
         juce::NormalisableRange<float> gainRange {GAIN_START, GAIN_END, GAIN_INTERVAL};
@@ -237,4 +252,23 @@ private:
         }
         return layout;
     };
+
+    std::atomic<uint32_t> updateFlags {0x1FF};
+
+    template <size_t I>
+    void updateSpecificFilter(int targetIndex, juce::dsp::IIR::Coefficients<T>::Ptr newCoefs, bool bypassed)
+    {
+        if (targetIndex == static_cast<int>(I))
+        {
+            *filterChain.get<I>().state = *newCoefs;
+            filterChain.setBypassed<I>(bypassed);
+        }
+        if constexpr (I + 1 < NUM_BANDS)
+            updateSpecificFilter<I + 1>(targetIndex, newCoefs, bypassed);
+    }
+
+    void updateProcessorAtIndex(int index, juce::dsp::IIR::Coefficients<T>::Ptr newCoefs, bool bypassed)
+    {
+        updateSpecificFilter<0>(index, newCoefs, bypassed);
+    }
 };
