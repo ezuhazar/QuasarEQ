@@ -3,7 +3,7 @@
 <JUCERPROJECT id="x6SWnH" name="QuasarEQ" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginManufacturerCode="Ezhz"
               pluginAAXCategory="1" pluginVST3Category="EQ" pluginName="qsr EQ"
-              companyName="Ezuhazar" version="1.2.0">
+              companyName="Ezuhazar" version="1.3.0">
   <MAINGROUP id="KVWAhs" name="QuasarEQ">
     <GROUP id="{A7B39CBD-CB16-DFB9-4453-FDEE49943E45}" name="Source">
       <FILE id="n7yoD4" name="QFifo.h" compile="0" resource="0" file="Source/QFifo.h"/>
