@@ -47,7 +47,9 @@ constexpr T constexpr_sqrt(T x)
     }
     T curr = x;
     for (int i = 0; i < 20; ++i)
+    {
         curr = (curr + x / curr) * 0.5f;
+    }
     return curr;
 }
 template <size_t... I>
