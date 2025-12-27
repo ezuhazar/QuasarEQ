@@ -141,7 +141,7 @@ public:
         {
             buffer.clear(i, 0, buffer.getNumSamples());
         }
-        if (parametersChanged.load())
+        if (parametersChanged.exchange(false))
         {
             updateFilters();
         }
@@ -215,7 +215,6 @@ private:
         outGain.setBypassed<0>(globalBypass);
         outGain.get<0>().setGainDecibels(g);
         updateFilterChainCoefficients(coefsBuffer, bandBypassStates, std::make_index_sequence<NUM_BANDS> {});
-        parametersChanged.store(false);
     };
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout() const
     {
