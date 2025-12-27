@@ -798,7 +798,7 @@ private:
             for (auto* s : {&freqSlider, &gainSlider, &qSlider})
             {
                 s->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
-                s->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 20);
+                s->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
             }
             for (auto* c : allComponents)
             {
@@ -815,10 +815,10 @@ private:
         void resized() override
         {
             auto bounds = getLocalBounds();
-            auto topHeader = bounds.removeFromTop(20);
-            typeComboBox.setBounds(topHeader.reduced(margin));
-            auto secHeader = bounds.removeFromTop(20);
-            bypassButton.setBounds(secHeader.reduced(margin));
+            auto topHeader = bounds.removeFromTop(30);
+            bypassButton.setBounds(topHeader.reduced(margin));
+            auto secHeader = bounds.removeFromTop(30);
+            typeComboBox.setBounds(secHeader.reduced(margin));
             bounds.reduce(margin, margin);
             int controlHeight = bounds.getHeight() / 3;
             freqSlider.setBounds(bounds.removeFromTop(controlHeight).reduced(margin));
