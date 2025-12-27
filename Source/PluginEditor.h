@@ -793,6 +793,8 @@ private:
         {
             typeComboBox.setJustificationType(juce::Justification::centred);
             typeComboBox.addItemList (filterTags, 1);
+            bypassButton.setClickingTogglesState(true);
+            bypassButton.setButtonText("B");
             for (auto* s : {&freqSlider, &gainSlider, &qSlider})
             {
                 s->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
@@ -807,12 +809,16 @@ private:
             gainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Gain" + index, gainSlider);
             qAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Q" + index, qSlider);
             typeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, "Type" + index, typeComboBox);
+            bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts, "Bypass" + index, bypassButton);
         };
         ~FilterBandControl() override {};
         void resized() override
         {
             auto bounds = getLocalBounds();
-            typeComboBox.setBounds(bounds.removeFromTop(30).reduced(margin));
+            auto topHeader = bounds.removeFromTop(20);
+            typeComboBox.setBounds(topHeader.reduced(margin));
+            auto secHeader = bounds.removeFromTop(20);
+            bypassButton.setBounds(secHeader.reduced(margin));
             bounds.reduce(margin, margin);
             int controlHeight = bounds.getHeight() / 3;
             freqSlider.setBounds(bounds.removeFromTop(controlHeight).reduced(margin));
@@ -820,11 +826,13 @@ private:
             qSlider.setBounds(bounds.reduced(margin));
         };
     private:
-        std::vector<juce::Component*> allComponents {&typeComboBox, &freqSlider, &gainSlider, &qSlider};
+        std::vector<juce::Component*> allComponents {&typeComboBox, &bypassButton, &freqSlider, &gainSlider, &qSlider};
+        CustomButton bypassButton;
         juce::Slider freqSlider;
         juce::Slider gainSlider;
         juce::Slider qSlider;
         juce::ComboBox typeComboBox;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassAttachment;
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> freqAttachment;
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainAttachment;
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> qAttachment;
