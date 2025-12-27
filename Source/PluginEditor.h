@@ -279,11 +279,7 @@ public:
         const float maxDb = 24.0f;
         for (int i = 0; i < NUM_BANDS; ++i)
         {
-
-
             juce::String index = juce::String(i + 1);
-
-
             const auto bypass = apvts.getRawParameterValue(ID_PREFIX_BYPASS + index)->load();
             if (bypass < 0.5f)
             {
@@ -540,10 +536,10 @@ private:
             const auto bypass = apvts.getRawParameterValue(ID_PREFIX_BYPASS + index)->load();
             if (bypass < 0.5f)
             {
-                const auto bandF = juce::jmin(apvts.getRawParameterValue("Freq" + index)->load(), static_cast<float>(sr * 0.49));
-                const auto bandQ = apvts.getRawParameterValue("Q" + index)->load();
-                const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue("Gain" + index)->load());
-                const auto bandT = static_cast<int>(apvts.getRawParameterValue("Type" + index)->load());
+                const auto bandF = juce::jmin(apvts.getRawParameterValue(ID_PREFIX_FREQ + index)->load(), static_cast<float>(sr * 0.49));
+                const auto bandQ = apvts.getRawParameterValue(ID_PREFIX_Q + index)->load();
+                const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue(ID_PREFIX_GAIN + index)->load());
+                const auto bandT = static_cast<int>(apvts.getRawParameterValue(ID_PREFIX_TYPE + index)->load());
                 coefsBuffer.push_back(filterFactories[bandT](sr, bandF, bandQ, bandG));
             }
         }
