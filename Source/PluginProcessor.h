@@ -46,12 +46,8 @@ constexpr T constexpr_sqrt(T x)
         return x;
     }
     T curr = x;
-    T prev = 0;
-    while (curr != prev)
-    {
-        prev = curr;
-        curr = (curr + x / curr) * 0.5;
-    }
+    for (int i = 0; i < 20; ++i)
+        curr = (curr + x / curr) * 0.5f;
     return curr;
 }
 template <size_t... I>
@@ -253,7 +249,9 @@ private:
         return layout;
     };
 
-    std::atomic<uint32_t> updateFlags {0x1FF};
+    std::atomic<uint32_t> updateFlags {
+        (1u << (NUM_BANDS + 1)) - 1
+    };
 
     template <size_t I>
     void updateSpecificFilter(int targetIndex, juce::dsp::IIR::Coefficients<T>::Ptr newCoefs, bool bypassed)
