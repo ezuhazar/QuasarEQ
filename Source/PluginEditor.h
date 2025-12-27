@@ -283,8 +283,8 @@ public:
             const auto bypass = apvts.getRawParameterValue(ID_PREFIX_BYPASS + index)->load();
             if (bypass < 0.5f)
             {
-                float freqHz = apvts.getRawParameterValue("Freq" + index)->load();
-                float gainDb = apvts.getRawParameterValue("Gain" + index)->load();
+                float freqHz = apvts.getRawParameterValue(NAME_PREFIX_FREQ + index)->load();
+                float gainDb = apvts.getRawParameterValue(NAME_PREFIX_GAIN + index)->load();
                 float x = bounds.getX() + bounds.getWidth() * juce::mapFromLog10(freqHz, MIN_HZ, MAX_HZ);
                 float y = juce::jmap(gainDb, minDb, maxDb, bounds.getBottom(), bounds.getY());
                 g.setColour(quasar::colours::labelBackground);
