@@ -166,29 +166,15 @@ public:
     {
         juce::MemoryOutputStream stream(destData, false);
         apvts.state.writeToStream(stream);
-    }
-    void setStateInformation (const void* data, int sizeInBytes) override
+    };
+    void setStateInformation(const void* data, int sizeInBytes) override
     {
-        auto tree = juce::ValueTree::readFromData (data, (size_t)sizeInBytes);
+        auto tree = juce::ValueTree::readFromData(data, size_t(sizeInBytes));
         if (tree.isValid())
         {
-            apvts.replaceState (tree);
-            if (auto* globalBypassParam = apvts.getParameter(ID_BYPASS))
-            {
-                if (globalBypassParam->getValue() > 0.5f)
-                {
-                    for (int i = 1; i <= NUM_BANDS; ++i)
-                    {
-                        if (auto* bandBypass = apvts.getParameter(ID_PREFIX_BYPASS + juce::String(i)))
-                        {
-                            bandBypass->setValueNotifyingHost(1.0f);
-                        }
-                    }
-                    globalBypassParam->setValueNotifyingHost(0.0f);
-                }
-            }
+            apvts.replaceState(tree);
         }
-    }
+    };
     juce::AudioProcessorEditor* createEditor() override;
     void parameterChanged(const juce::String& parameterID, float newValue)
     {
