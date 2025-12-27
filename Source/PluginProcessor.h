@@ -56,7 +56,8 @@ template <size_t... I>
 auto make_chain_type(std::index_sequence<I...>) -> juce::dsp::ProcessorChain < std::decay_t<decltype((void)I, juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>{}) > ... > ;
 template <size_t N>
 using FilterChain = decltype(make_chain_type(std::make_index_sequence<N>{}));
-static constexpr bool BYPASS_DEFAULT = false;
+static constexpr bool GLOBAL_BYPASS_DEFAULT = false;
+static constexpr bool BYPASS_DEFAULT = true;
 static constexpr int TYPE_DEFAULT = 4;
 static constexpr float FREQ_START = 20.0f;
 static constexpr float FREQ_END = 20000.0f;
@@ -235,7 +236,7 @@ private:
         freqRange.setSkewForCentre(freqRange.snapToLegalValue(FREQ_CENTRE));
         qualRange.setSkewForCentre(qualRange.snapToLegalValue(QUAL_CENTRE));
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(std::make_unique<juce::AudioParameterBool>(ID_GLOBAL_BYPASS, NAME_GLOBAL_BYPASS, BYPASS_DEFAULT));
+        layout.add(std::make_unique<juce::AudioParameterBool>(ID_GLOBAL_BYPASS, NAME_GLOBAL_BYPASS, GLOBAL_BYPASS_DEFAULT));
         layout.add(std::make_unique<juce::AudioParameterFloat>(ID_GAIN, NAME_GAIN, gainRange, GAIN_CENTRE, UNIT_DB));
         for (int i = 0; i < NUM_BANDS; ++i)
         {

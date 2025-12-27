@@ -726,7 +726,7 @@ public:
         pluginInfoLabel.setJustificationType(juce::Justification::centredLeft);
         pluginInfoLabel.setFont(16.0f);
         gainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-        gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
+        gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 48, 16);
         bypassButton.setClickingTogglesState(true);
         addAndMakeVisible(visualizerComponent);
         addAndMakeVisible(pluginInfoLabel);
@@ -810,7 +810,7 @@ private:
             for (auto* s : {&freqSlider, &gainSlider, &qSlider})
             {
                 s->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
-                s->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+                s->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 48, 16);
             }
             for (auto* c : allComponents)
             {
