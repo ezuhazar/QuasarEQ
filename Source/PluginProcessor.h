@@ -205,7 +205,7 @@ private:
         const bool globalBypass = static_cast<bool>(apvts.getRawParameterValue(ID_BYPASS)->load());
         for (int i = 0; i < NUM_BANDS; ++i)
         {
-            if ((flags & (1 << i)) || (flags & (1 << NUM_BANDS)))
+            if ((flags & (1 << i)) || (flags & GLOBAL_PARAMS_MASK))
             {
                 const juce::String idx = juce::String(i + 1);
                 const auto bandF = juce::jmin(apvts.getRawParameterValue(ID_PREFIX_FREQ + idx)->load(), static_cast<float>(sr * 0.49));
@@ -219,7 +219,7 @@ private:
                 updateProcessorAtIndex(i, newCoefs, globalBypass || individualBypass);
             }
         }
-        if (flags & (1 << NUM_BANDS))
+        if (flags & GLOBAL_PARAMS_MASK)
         {
             const auto g = apvts.getRawParameterValue(ID_GAIN)->load();
             outGain.setBypassed<0>(globalBypass);
@@ -249,9 +249,11 @@ private:
         return layout;
     };
 
-    std::atomic<uint32_t> updateFlags {
-        (1u << (NUM_BANDS + 1)) - 1
-    };
+    static constexpr uint32_t ALL_BANDS_MASK = (1u << NUM_BANDS) - 1;
+    static constexpr uint32_t GLOBAL_PARAMS_MASK = (1u << NUM_BANDS);
+    static constexpr uint32_t ALL_UPDATE_MASK = ALL_BANDS_MASK | GLOBAL_PARAMS_MASK;
+
+    std::atomic<uint32_t> updateFlags {ALL_UPDATE_MASK};
 
     template <size_t I>
     void updateSpecificFilter(int targetIndex, juce::dsp::IIR::Coefficients<T>::Ptr newCoefs, bool bypassed)
