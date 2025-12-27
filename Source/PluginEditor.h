@@ -258,7 +258,7 @@ public:
             g.strokePath(curvePathPeak, juce::PathStrokeType(1.3f));
         }
         auto& apvts = audioProcessor.apvts;
-        bool isBypass = apvts.getRawParameterValue("bypass")->load();
+        bool isBypass = apvts.getRawParameterValue(ID_GLOBAL_BYPASS)->load();
         g.setColour(quasar::colours::enabled);
         g.strokePath(responseCurvePath, juce::PathStrokeType(2.5f));
         if (!isBypass)
@@ -732,8 +732,8 @@ public:
         addAndMakeVisible(pluginInfoLabel);
         addAndMakeVisible(gainSlider);
         addAndMakeVisible(bypassButton);
-        outGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "outGain", gainSlider);
-        bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "bypass", bypassButton);
+        outGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, ID_GAIN, gainSlider);
+        bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, ID_GLOBAL_BYPASS, bypassButton);
         setSize(657, windowHeight);
     };
     QuasarEQAudioProcessorEditor::~QuasarEQAudioProcessorEditor()
@@ -806,7 +806,6 @@ private:
             typeComboBox.setJustificationType(juce::Justification::centred);
             typeComboBox.addItemList (filterTags, 1);
             bypassButton.setClickingTogglesState(true);
-            bypassButton.setButtonText("B");
             for (auto* s : {&freqSlider, &gainSlider, &qSlider})
             {
                 s->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
@@ -817,11 +816,11 @@ private:
                 addAndMakeVisible(c);
             }
             const juce::String index = juce::String(bandIndex + 1);
-            freqAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Freq" + index, freqSlider);
-            gainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Gain" + index, gainSlider);
-            qAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Q" + index, qSlider);
-            typeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, "Type" + index, typeComboBox);
-            bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts, "Bypass" + index, bypassButton);
+            freqAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, ID_PREFIX_FREQ + index, freqSlider);
+            gainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, ID_PREFIX_GAIN + index, gainSlider);
+            qAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, ID_PREFIX_Q + index, qSlider);
+            typeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, ID_PREFIX_TYPE + index, typeComboBox);
+            bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts, ID_PREFIX_BYPASS + index, bypassButton);
         };
         ~FilterBandControl() override {};
         void resized() override
