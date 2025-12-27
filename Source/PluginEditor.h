@@ -279,23 +279,31 @@ public:
         const float maxDb = 24.0f;
         for (int i = 0; i < NUM_BANDS; ++i)
         {
+
+
             juce::String index = juce::String(i + 1);
-            float freqHz = apvts.getRawParameterValue("Freq" + index)->load();
-            float gainDb = apvts.getRawParameterValue("Gain" + index)->load();
-            float x = bounds.getX() + bounds.getWidth() * juce::mapFromLog10(freqHz, MIN_HZ, MAX_HZ);
-            float y = juce::jmap(gainDb, minDb, maxDb, bounds.getBottom(), bounds.getY());
-            g.setColour(quasar::colours::labelBackground);
-            const int pointSize = 14;
-            const int highLightPointSize = pointSize * 2;
-            g.fillEllipse(x - (pointSize >> 1), y - pointSize * 0.5f, pointSize, pointSize);
-            g.setColour(quasar::colours::staticText);
-            g.drawEllipse(x - (pointSize >> 1), y - pointSize * 0.5f, pointSize, pointSize, 1.5f);
-            juce::String bandNumber = juce::String(i + 1);
-            const int textHeight = 12;
-            g.setFont(textHeight);
-            const int textWidth = g.getCurrentFont().getStringWidth(bandNumber);
-            juce::Rectangle<int> textBounds(juce::roundToInt(x - textWidth * 0.5f), y - 6, textWidth, textHeight);
-            g.drawText(bandNumber, textBounds, juce::Justification::centred, false);
+
+
+            const auto bypass = apvts.getRawParameterValue("Bypass" + index)->load();
+            if (bypass < 0.5f)
+            {
+                float freqHz = apvts.getRawParameterValue("Freq" + index)->load();
+                float gainDb = apvts.getRawParameterValue("Gain" + index)->load();
+                float x = bounds.getX() + bounds.getWidth() * juce::mapFromLog10(freqHz, MIN_HZ, MAX_HZ);
+                float y = juce::jmap(gainDb, minDb, maxDb, bounds.getBottom(), bounds.getY());
+                g.setColour(quasar::colours::labelBackground);
+                const int pointSize = 14;
+                const int highLightPointSize = pointSize * 2;
+                g.fillEllipse(x - (pointSize >> 1), y - pointSize * 0.5f, pointSize, pointSize);
+                g.setColour(quasar::colours::staticText);
+                g.drawEllipse(x - (pointSize >> 1), y - pointSize * 0.5f, pointSize, pointSize, 1.5f);
+                juce::String bandNumber = juce::String(i + 1);
+                const int textHeight = 12;
+                g.setFont(textHeight);
+                const int textWidth = g.getCurrentFont().getStringWidth(bandNumber);
+                juce::Rectangle<int> textBounds(juce::roundToInt(x - textWidth * 0.5f), y - 6, textWidth, textHeight);
+                g.drawText(bandNumber, textBounds, juce::Justification::centred, false);
+            }
         }
     };
 
@@ -524,16 +532,20 @@ private:
         responseCurveMagnitude.clear();
         responseCurveMagnitude.resize(curveSize, 0.0f);
         using T = float;
-        std::array<juce::dsp::IIR::Coefficients<T>::Ptr, NUM_BANDS> coefsBuffer;
+        std::vector<juce::dsp::IIR::Coefficients<T>::Ptr> coefsBuffer;
         auto& apvts = audioProcessor.apvts;
         for (size_t i = 0; i < NUM_BANDS; ++i)
         {
             const juce::String idx = juce::String(i + 1);
-            const auto bandF = juce::jmin(apvts.getRawParameterValue("Freq" + idx)->load(), static_cast<float>(sr * 0.49));
-            const auto bandQ = apvts.getRawParameterValue("Q" + idx)->load();
-            const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue("Gain" + idx)->load());
-            const auto bandT = static_cast<int>(apvts.getRawParameterValue("Type" + idx)->load());
-            coefsBuffer[i] = filterFactories[bandT](sr, bandF, bandQ, bandG);
+            const auto bypass = apvts.getRawParameterValue("Bypass" + idx)->load();
+            if (bypass < 0.5f)
+            {
+                const auto bandF = juce::jmin(apvts.getRawParameterValue("Freq" + idx)->load(), static_cast<float>(sr * 0.49));
+                const auto bandQ = apvts.getRawParameterValue("Q" + idx)->load();
+                const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue("Gain" + idx)->load());
+                const auto bandT = static_cast<int>(apvts.getRawParameterValue("Type" + idx)->load());
+                coefsBuffer.push_back(filterFactories[bandT](sr, bandF, bandQ, bandG));
+            }
         }
         for (int i = 0; i < curveSize; ++i)
         {
