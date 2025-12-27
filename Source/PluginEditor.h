@@ -749,8 +749,8 @@ public:
         visualizerComponent.setBounds(mid);
         gainSlider.setBounds(bot.removeFromRight(20 * 3).reduced(margin));
         bot.reduce(margin, margin);
-        const int bandWidth = bot.getWidth() / bandControls.size();
-        for (int i = 0; i < bandControls.size(); ++i)
+        const int bandWidth = bot.getWidth() / NUM_BANDS;
+        for (int i = 0; i < NUM_BANDS; ++i)
         {
             if (bandControls[i])
             {
