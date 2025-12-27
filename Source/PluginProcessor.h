@@ -1,7 +1,7 @@
 #pragma once
 #include <JuceHeader.h>
 #include "QFifo.h"
-static inline const juce::String ID_BYPASS {"bypass"};
+static inline const juce::String ID_GLOBAL_BYPASS {"bypass"};
 static inline const juce::String ID_GAIN {"outGain"};
 static inline const juce::String ID_PREFIX_FREQ {"Freq"};
 static inline const juce::String ID_PREFIX_GAIN {"Gain"};
@@ -9,7 +9,7 @@ static inline const juce::String ID_PREFIX_Q {"Q"};
 static inline const juce::String ID_PREFIX_TYPE {"Type"};
 static inline const juce::String ID_PREFIX_BYPASS {"Bypass"};
 static inline const juce::String ID_PARAMETERS {"Parameters"};
-static inline const juce::String NAME_BYPASS {"Bypass"};
+static inline const juce::String NAME_GLOBAL_BYPASS {"Bypass"};
 static inline const juce::String NAME_GAIN {"Gain"};
 static inline const juce::String NAME_PREFIX_FREQ {"Freq"};
 static inline const juce::String NAME_PREFIX_GAIN {"Gain"};
@@ -87,7 +87,7 @@ public:
         , apvts(*this, nullptr, ID_PARAMETERS, createParameterLayout())
     {
         apvts.addParameterListener(ID_GAIN, this);
-        apvts.addParameterListener(ID_BYPASS, this);
+        apvts.addParameterListener(ID_GLOBAL_BYPASS, this);
         for (int i = 0; i < NUM_BANDS; ++i)
         {
             const juce::String index = juce::String (i + 1);
@@ -178,7 +178,7 @@ public:
     juce::AudioProcessorEditor* createEditor() override;
     void parameterChanged(const juce::String& parameterID, float newValue)
     {
-        if (parameterID == ID_GAIN || parameterID == ID_BYPASS)
+        if (parameterID == ID_GAIN || parameterID == ID_GLOBAL_BYPASS)
         {
             updateFlags.fetch_or(1 << NUM_BANDS);
         }
@@ -205,7 +205,7 @@ private:
     {
         if (flags == 0) return;
         const auto sr = getSampleRate();
-        const bool globalBypass = static_cast<bool>(apvts.getRawParameterValue(ID_BYPASS)->load());
+        const bool globalBypass = static_cast<bool>(apvts.getRawParameterValue(ID_GLOBAL_BYPASS)->load());
         for (int i = 0; i < NUM_BANDS; ++i)
         {
             if ((flags & (1 << i)) || (flags & GLOBAL_PARAMS_MASK))
@@ -235,7 +235,7 @@ private:
         freqRange.setSkewForCentre(freqRange.snapToLegalValue(FREQ_CENTRE));
         qualRange.setSkewForCentre(qualRange.snapToLegalValue(QUAL_CENTRE));
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(std::make_unique<juce::AudioParameterBool>(ID_BYPASS, NAME_BYPASS, BYPASS_DEFAULT));
+        layout.add(std::make_unique<juce::AudioParameterBool>(ID_GLOBAL_BYPASS, NAME_GLOBAL_BYPASS, BYPASS_DEFAULT));
         layout.add(std::make_unique<juce::AudioParameterFloat>(ID_GAIN, NAME_GAIN, gainRange, GAIN_CENTRE, UNIT_DB));
         for (int i = 0; i < NUM_BANDS; ++i)
         {
