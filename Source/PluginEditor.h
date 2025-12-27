@@ -284,7 +284,7 @@ public:
             juce::String index = juce::String(i + 1);
 
 
-            const auto bypass = apvts.getRawParameterValue("Bypass" + index)->load();
+            const auto bypass = apvts.getRawParameterValue(ID_PREFIX_BYPASS + index)->load();
             if (bypass < 0.5f)
             {
                 float freqHz = apvts.getRawParameterValue("Freq" + index)->load();
@@ -536,14 +536,14 @@ private:
         auto& apvts = audioProcessor.apvts;
         for (size_t i = 0; i < NUM_BANDS; ++i)
         {
-            const juce::String idx = juce::String(i + 1);
-            const auto bypass = apvts.getRawParameterValue("Bypass" + idx)->load();
+            const juce::String index = juce::String(i + 1);
+            const auto bypass = apvts.getRawParameterValue(ID_PREFIX_BYPASS + index)->load();
             if (bypass < 0.5f)
             {
-                const auto bandF = juce::jmin(apvts.getRawParameterValue("Freq" + idx)->load(), static_cast<float>(sr * 0.49));
-                const auto bandQ = apvts.getRawParameterValue("Q" + idx)->load();
-                const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue("Gain" + idx)->load());
-                const auto bandT = static_cast<int>(apvts.getRawParameterValue("Type" + idx)->load());
+                const auto bandF = juce::jmin(apvts.getRawParameterValue("Freq" + index)->load(), static_cast<float>(sr * 0.49));
+                const auto bandQ = apvts.getRawParameterValue("Q" + index)->load();
+                const auto bandG = juce::Decibels::decibelsToGain(apvts.getRawParameterValue("Gain" + index)->load());
+                const auto bandT = static_cast<int>(apvts.getRawParameterValue("Type" + index)->load());
                 coefsBuffer.push_back(filterFactories[bandT](sr, bandF, bandQ, bandG));
             }
         }
